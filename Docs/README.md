@@ -5,3 +5,4 @@
 - Trash image dataset: https://github.com/garythung/trashnet
 - Bottle classification: https://github.com/jenkspt/recycle
 - Pretrained model: https://universe.roboflow.com/recycle/recyclable-items
+- Similar idea: https://github.com/jauntybrain/know_waste/tree/development
