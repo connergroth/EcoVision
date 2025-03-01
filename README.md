@@ -1,4 +1,4 @@
-# HackCU-11-Project
+# EcoVision - HackCU-11-Project
 
 # Resources
 - AMD AI Repo: https://github.com/Xilinx/mlir-aie
