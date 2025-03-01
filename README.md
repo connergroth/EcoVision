@@ -2,5 +2,6 @@
 
 # Resources
 - AMD AI Repo: https://github.com/Xilinx/mlir-aie
-- Clarifai: https://clarifai.com/clarifai/main/models/food-item-recognition
-- LogMeal: https://logmeal.es/
+- Trash image dataset: https://github.com/garythung/trashnet
+- Bottle classification: https://github.com/jenkspt/recycle
+- Pretrained model: https://universe.roboflow.com/recycle/recyclable-items
