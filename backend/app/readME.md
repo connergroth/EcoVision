@@ -1,6 +1,6 @@
-# RecycleVision API
+# EcoVision API
 
-A FastAPI backend for the RecycleVision application, providing image detection, user history, and leaderboard functionalities.
+A FastAPI backend for the EcoVision application, providing image detection, user history, and leaderboard functionalities.
 
 ## Features
 
