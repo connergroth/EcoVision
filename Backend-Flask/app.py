@@ -1,18 +1,18 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
 import torchvision.models as models
 
 app = Flask(__name__)
+CORS(app)
 
-# Load trained model
 model = models.resnet18(pretrained=False)
 model.fc = torch.nn.Linear(model.fc.in_features, 6)
 model.load_state_dict(torch.load("models/recyclable_detector.pth"))
 model.eval()
 
-# Define transformation
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
