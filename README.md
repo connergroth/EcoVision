@@ -44,6 +44,10 @@ We leveraged Xilinx's MLIR-AIE framework for model optimization and NPU accelera
    - Calibrated quantization parameters using representative dataset samples
    - Generated quantized model variants optimized specifically for AMD NPU execution
 
+## 📱 App Design
+<img width="1296" alt="original" src="https://github.com/user-attachments/assets/1766098d-4304-49f5-bfd8-0a97db76399f" />
+<img width="1307" alt="original-2" src="https://github.com/user-attachments/assets/164ae064-48ea-4f8e-903d-a875d542c8dd" />
+
 ## 🖼️ Sample Training Images
 <div align="center">
   <p float="left">
@@ -53,7 +57,6 @@ We leveraged Xilinx's MLIR-AIE framework for model optimization and NPU accelera
     <img src="https://github.com/user-attachments/assets/88eb3988-c121-454d-8832-d6eb5ef5f80f" width="48%" /> 
   </p>
 </div>
-
 
 ## ✨ Key Features
 
