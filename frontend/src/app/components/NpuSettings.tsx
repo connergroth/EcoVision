@@ -2,7 +2,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { verifyNpuAcceleration, getAccelerationInfo, initializeTensorflow } from '@/utils/model-manager';
+import { verifyNpuAcceleration, getAccelerationInfo, initializeTensorflow, startNpuMonitoring, stopNpuMonitoring } from '@/utils/model-manager';
+import * as tf from '@tensorflow/tfjs';
 
 // Local storage keys
 const SETTINGS_KEY = 'ecoVision.npuSettings';
@@ -15,6 +16,12 @@ const NpuSettings: React.FC = () => {
   const [accelerationInfo, setAccelerationInfo] = useState<Record<string, any>>({});
   const [benchmarkResults, setBenchmarkResults] = useState<{isNpuActive: boolean, benchmarkMs: number} | null>(null);
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+  
+  // NPU usage monitoring
+  const [npuUsage, setNpuUsage] = useState<any>(null);
+  const [npuHistory, setNpuHistory] = useState<any[]>([]);
+  const [isMonitoring, setIsMonitoring] = useState<boolean>(false);
+  const [currentBackend, setCurrentBackend] = useState<string>('');
 
   // Load settings on component mount
   useEffect(() => {
@@ -43,6 +50,14 @@ const NpuSettings: React.FC = () => {
         const info = await getAccelerationInfo();
         setAccelerationInfo(info);
         
+        // Get current backend and set it
+        setCurrentBackend(tf.getBackend() || 'none');
+        
+        // Set initial NPU usage if available
+        if (info.npuUsage) {
+          setNpuUsage(info.npuUsage);
+        }
+        
         setIsLoading(false);
       } catch (error) {
         console.error('Error checking NPU availability:', error);
@@ -52,6 +67,19 @@ const NpuSettings: React.FC = () => {
     };
 
     checkNpu();
+    
+    // Listen for NPU usage updates
+    const handleNpuUsageUpdate = (event: any) => {
+      setNpuUsage(event.detail.current);
+      setNpuHistory(event.detail.history);
+    };
+    
+    window.addEventListener('npu-usage-update', handleNpuUsageUpdate);
+    
+    return () => {
+      stopNpuMonitoring();
+      window.removeEventListener('npu-usage-update', handleNpuUsageUpdate);
+    };
   }, []);
 
   // Save settings when they change
@@ -63,10 +91,12 @@ const NpuSettings: React.FC = () => {
       }));
       
       // Update environment variables in memory (these won't persist after reload)
-      window.process = window.process || {};
-      window.process.env = window.process.env || {};
-      window.process.env.NEXT_PUBLIC_USE_NPU = useNpu ? 'true' : 'false';
-      window.process.env.NEXT_PUBLIC_NPU_IMPLEMENTATION = implementation;
+      if (typeof window !== 'undefined') {
+        window.process = window.process || {};
+        window.process.env = window.process.env || {};
+        window.process.env.NEXT_PUBLIC_USE_NPU = useNpu ? 'true' : 'false';
+        window.process.env.NEXT_PUBLIC_NPU_IMPLEMENTATION = implementation;
+      }
     } catch (error) {
       console.error('Error saving NPU settings:', error);
     }
@@ -83,6 +113,17 @@ const NpuSettings: React.FC = () => {
       alert('Failed to run benchmark. See console for details.');
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  // Toggle NPU monitoring
+  const toggleMonitoring = () => {
+    if (isMonitoring) {
+      stopNpuMonitoring();
+      setIsMonitoring(false);
+    } else {
+      startNpuMonitoring(500); // Update every 500ms
+      setIsMonitoring(true);
     }
   };
 
@@ -140,6 +181,92 @@ const NpuSettings: React.FC = () => {
           </div>
         )}
         
+        {/* NPU Usage Monitoring Button */}
+        <div className="flex items-center mt-2">
+          <button
+            onClick={toggleMonitoring}
+            disabled={isLoading}
+            className={`px-3 py-1 rounded text-sm ${
+              isMonitoring 
+                ? 'bg-red-100 text-red-800 hover:bg-red-200' 
+                : 'bg-green-100 text-green-800 hover:bg-green-200'
+            }`}
+          >
+            {isMonitoring ? 'Stop NPU Monitoring' : 'Start NPU Monitoring'}
+          </button>
+        </div>
+        
+        {/* NPU Usage Display (shows when monitoring or when we have usage data) */}
+        {npuUsage && (
+          <div className="mt-2 p-3 bg-gray-50 rounded border border-gray-200">
+            <h3 className="text-sm font-medium mb-2">Current NPU Status</h3>
+            
+            {/* NPU Utilization Bar */}
+            <div className="mb-2">
+              <div className="flex justify-between text-xs mb-1">
+                <span>Utilization</span>
+                <span>{npuUsage.utilizationPercent}%</span>
+              </div>
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full ${
+                    npuUsage.utilizationPercent > 80 ? 'bg-red-500' : 
+                    npuUsage.utilizationPercent > 50 ? 'bg-yellow-500' : 'bg-green-500'
+                  }`}
+                  style={{ width: `${npuUsage.utilizationPercent}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            {/* Memory Usage Bar */}
+            <div className="mb-2">
+              <div className="flex justify-between text-xs mb-1">
+                <span>Memory</span>
+                <span>{npuUsage.memoryUsageMB} MB</span>
+              </div>
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500"
+                  style={{ width: `${Math.min(100, (npuUsage.memoryUsageMB / 500) * 100)}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            {/* Performance Stats */}
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs mt-2">
+              <div>Processing Time:</div>
+              <div className="text-right">{npuUsage.processingTimeMs.toFixed(2)}ms</div>
+              
+              <div>NPU Status:</div>
+              <div className={`text-right ${npuUsage.isNpuActive ? 'text-green-600' : 'text-red-500'}`}>
+                {npuUsage.isNpuActive ? 'Active' : 'Inactive'}
+              </div>
+              
+              <div>Current Backend:</div>
+              <div className="text-right">{currentBackend}</div>
+            </div>
+            
+            {/* Usage History (mini sparkline) */}
+            {npuHistory.length > 5 && (
+              <div className="mt-3">
+                <div className="text-xs mb-1">Utilization History</div>
+                <div className="h-8 flex items-end space-x-0.5">
+                  {npuHistory.slice(-20).map((point: any, index: number) => (
+                    <div 
+                      key={index}
+                      className={`w-1 ${
+                        point.utilizationPercent > 80 ? 'bg-red-400' : 
+                        point.utilizationPercent > 50 ? 'bg-yellow-400' : 'bg-green-400'
+                      }`}
+                      style={{ height: `${Math.max(4, point.utilizationPercent * 0.08)}rem` }}
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        
         {/* Advanced Button */}
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
@@ -155,8 +282,7 @@ const NpuSettings: React.FC = () => {
             <ul className="space-y-1">
               <li><span className="font-medium">TensorFlow Backend:</span> {accelerationInfo.tensorflowBackend || 'Unknown'}</li>
               <li><span className="font-medium">WebGPU Support:</span> {accelerationInfo.webgpuSupported ? 'Yes' : 'No'}</li>
-              <li><span className="font-medium">Device Vendor:</span> {accelerationInfo.deviceVendor || 'Unknown'}</li>
-              <li><span className="font-medium">Architecture:</span> {accelerationInfo.deviceArchitecture || 'Unknown'}</li>
+              <li><span className="font-medium">Device Vendor:</span> {accelerationInfo.deviceInfo?.vendor || 'Unknown'}</li>
               <li><span className="font-medium">WebGPU Backend Active:</span> {accelerationInfo.isWebGpuBackend ? 'Yes' : 'No'}</li>
             </ul>
             
