@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
 
     const snapshot = await userTrashRef.get();
     const trashDocs = snapshot.docs.map((doc) => doc.data());
-    console.log(trashDocs);
 
     return NextResponse.json(trashDocs);
 

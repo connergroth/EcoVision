@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { bucket } from "@/firebase/firebaseAdminConfig";
 import base64 from "base64-js";
 import { adminDb } from "@/firebase/firebaseAdminConfig";
+import { FieldValue } from "firebase-admin/firestore";
 
 
 export async function GET(request: NextRequest) {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     try {
         const data = await request.json();
         const base64Image = data.imageData;
-        const { item, category, insight, bin, userId } = data;
+        const { item, category, insight, bin, userId, email } = data;
 
 
         if (!base64Image) {
@@ -81,12 +82,17 @@ export async function POST(request: NextRequest) {
         await file.save(imageBuffer, {
             metadata: {
                 contentType: 'image/jpeg',
-                cacheControl: 'public, max-age=31536000' // Optional: Add caching headers
+                cacheControl: 'public, max-age=31536000'
             }
         });
 
-        const imageUrl = `https://storage.googleapis.com/trash-app-images/${filename}`;
+        // Get the signed URL for immediate access
+        const [signedUrl] = await file.getSignedUrl({
+            action: 'read',
+            expires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours from now
+        });
 
+        const imageUrl = signedUrl;
 
         const trashData = {
             item: item,
@@ -104,6 +110,26 @@ export async function POST(request: NextRequest) {
             .collection("trash")
             .doc(); // This will auto-generate a new document ID
 
+        const userRef = adminDb.collection("users").doc(userId);
+        // Get the user document
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            // Create new user document if it doesn't exist
+            await userRef.set({
+                createdAt: new Date(),
+                trashCaptures: 1,
+                email: email
+            });
+        } else {
+            // Update existing user document
+            await userRef.update({
+                trashCaptures: FieldValue.increment(1),
+                email: email
+            });
+        }
+
+        // Don't forget to create the trash document
         await userTrashRef.set(trashData);
 
         return NextResponse.json({

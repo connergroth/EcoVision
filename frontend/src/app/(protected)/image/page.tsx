@@ -62,11 +62,12 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
     );
 };
 
-const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId }: { 
+const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, email }: { 
     isWebcamOpen: boolean, 
     setIsWebcamOpen: (isWebcamOpen: boolean) => void,
     onScanComplete: (data: any) => void,
-    userId: string
+    userId: string,
+    email: string
 }) => {
     const webcamRef = useRef(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -119,7 +120,7 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId }
                 if(!(data.item == "N/A")) {
                     const result = await fetch("/api/image", {
                         method: "POST",
-                        body: JSON.stringify({ imageData: response.imageSrc, item: data.item, category: data.category, insight: data.insight, bin: data.bin, userId }),
+                        body: JSON.stringify({ imageData: response.imageSrc, item: data.item, category: data.category, insight: data.insight, bin: data.bin, userId, email }),
                     });
                     console.log("IMAGE SRC: ", response.imageSrc);
                 }
@@ -171,9 +172,9 @@ export default function Home() {
         <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-12 px-4">
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold mb-3 text-green-800">
-                        EcoVision
-                    </h1>
+                <h1 className="mb-10 text-7xl font-extralight tracking-tight text-gray-900 [text-shadow:_4px_4px_12px_rgb(0_0_0_/_35%)]">
+                    Eco<span className="text-emerald-500">Vision</span>
+                </h1>
                     <p className="text-slate-600 text-lg">
                         Point your camera at any item to identify the correct recycling bin
                     </p>
@@ -187,6 +188,7 @@ export default function Home() {
                                 setIsWebcamOpen={setIsWebcamOpen}
                                 onScanComplete={handleScanComplete}
                                 userId={user?.uid}
+                                email={user?.email}
                             />
                             <div className="flex justify-center">
                                 <button 
