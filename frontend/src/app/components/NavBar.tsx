@@ -40,6 +40,12 @@ const NavBar = () => {
             >
               Leaderboard
             </Link>
+            <Link 
+              href="/settings" 
+              className="text-gray-700 font-medium hover:text-emerald-600 transition-all duration-200 text-sm"
+            >
+              Settings
+            </Link>
           </div>
           
           <button

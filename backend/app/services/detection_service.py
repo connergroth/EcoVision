@@ -148,75 +148,128 @@ def process_image(image_data: bytes, resize_for_streaming: bool = False) -> np.n
 def post_process(outputs):
     """
     Post-process the model outputs to get detections in a standard format.
-    This handles direct outputs from our custom trained YOLOv8 model.
     
     Args:
-        outputs: Raw model outputs
+        outputs: Raw model outputs from ONNX model
         
     Returns:
-        List of processed detections
+        List of Detection objects
     """
     try:
-        # The number of classes in the model
-        num_classes = len(LABELS)  # 6 recycling categories
-        
-        # Handle different output formats
-        if isinstance(outputs, list) and len(outputs) > 0:
-            # Multiple output tensors - typical for YOLOv8 ONNX models
-            # First tensor contains the detection results
-            detection_output = outputs[0]
-        else:
-            # Single output tensor
-            detection_output = outputs
-        
-        # Process the detection output
-        # YOLOv8 ONNX output format: [batch, num_detections, 4+num_classes]
-        # Where 4 is for bounding box coordinates (x, y, w, h) and num_classes is the number of class probabilities
-        
-        # Threshold for confidence
-        conf_threshold = 0.25
-        
-        # List to store final detections
-        detections = []
-        
-        # Process each detection
-        for i in range(detection_output.shape[1]):
-            # Get confidence (objectness * class_prob)
-            confidence = float(np.max(detection_output[0, i, 4:]))
-            
-            # Skip low confidence detections
-            if confidence < conf_threshold:
-                continue
-            
-            # Get class with highest probability
-            class_id = int(np.argmax(detection_output[0, i, 4:]))
-            
-            # Get bounding box coordinates - normalized
-            x, y, w, h = detection_output[0, i, :4]
-            
-            # Convert to RecyclableCategory
-            if class_id < len(LABELS):
-                try:
-                    category = RecyclableCategory(LABELS[class_id])
-                except ValueError:
-                    category = RecyclableCategory.UNKNOWN
+        # Determine output format (single array or multiple arrays)
+        if isinstance(outputs, list):
+            if len(outputs) > 1:
+                # Multiple output format (boxes, scores, classes)
+                boxes = outputs[0]
+                scores = outputs[1]
+                class_ids = outputs[2].astype(np.int32)
+                
+                # Create detections list
+                detections = []
+                
+                # Confidence threshold
+                conf_threshold = 0.25
+                
+                # Process each detection
+                for i in range(boxes.shape[1]):
+                    if scores[0, i] >= conf_threshold:
+                        # Get class id and score
+                        class_id = int(class_ids[0, i])
+                        confidence = float(scores[0, i])
+                        
+                        # Get box coordinates
+                        x1, y1, x2, y2 = boxes[0, i, :]
+                        
+                        # Convert to normalized coordinates if needed
+                        # (depends on your model's output format)
+                        
+                        # Convert to RecyclableCategory
+                        if class_id < len(LABELS):
+                            try:
+                                category = RecyclableCategory(LABELS[class_id])
+                            except ValueError:
+                                category = RecyclableCategory.UNKNOWN
+                        else:
+                            category = RecyclableCategory.UNKNOWN
+                        
+                        # Create bounding box
+                        bbox = BoundingBox(
+                            x_min=float(x1),
+                            y_min=float(y1),
+                            x_max=float(x2),
+                            y_max=float(y2)
+                        )
+                        
+                        # Add detection
+                        detections.append(Detection(
+                            category=category,
+                            confidence=confidence,
+                            bounding_box=bbox
+                        ))
             else:
-                category = RecyclableCategory.UNKNOWN
+                # Single output array but in a list
+                detection_output = outputs[0]
+        else:
+            # Single output array
+            detection_output = outputs
             
-            # Create bounding box
-            bbox = BoundingBox(
-                x_min=float(x - w/2),
-                y_min=float(y - h/2),
-                x_max=float(x + w/2),
-                y_max=float(y + h/2)
-            )
+        # If we have a single detection output (most common for YOLOv8)
+        if 'detection_output' in locals():
+            # Number of classes in your model
+            num_classes = len(LABELS)
             
-            # Add detection
-            detections.append(Detection(
-                category=category,
-                confidence=confidence,
-                bounding_box=bbox
-            ))
+            # Confidence threshold
+            conf_threshold = 0.25
+            
+            # List to store final detections
+            detections = []
+            
+            # Process each detection
+            for i in range(detection_output.shape[1]):
+                # Get confidence (highest class probability)
+                class_scores = detection_output[0, i, 4:4+num_classes]
+                confidence = float(np.max(class_scores))
+                
+                # Skip low confidence detections
+                if confidence < conf_threshold:
+                    continue
+                
+                # Get class with highest probability
+                class_id = int(np.argmax(class_scores))
+                
+                # Get bounding box coordinates
+                # YOLOv8 typically outputs [x_center, y_center, width, height]
+                cx, cy, w, h = detection_output[0, i, :4]
+                
+                # Convert to corner coordinates
+                x1 = cx - w/2
+                y1 = cy - h/2
+                x2 = cx + w/2
+                y2 = cy + h/2
+                
+                # Convert to RecyclableCategory
+                if class_id < len(LABELS):
+                    try:
+                        category = RecyclableCategory(LABELS[class_id])
+                    except ValueError:
+                        category = RecyclableCategory.UNKNOWN
+                else:
+                    category = RecyclableCategory.UNKNOWN
+                
+                # Create bounding box
+                bbox = BoundingBox(
+                    x_min=float(x1),
+                    y_min=float(y1),
+                    x_max=float(x2),
+                    y_max=float(y2)
+                )
+                
+                # Add detection
+                detections.append(Detection(
+                    category=category,
+                    confidence=confidence,
+                    bounding_box=bbox
+                ))
         
         # Sort by confidence (highest first)
         detections.sort(key=lambda x: x.confidence, reverse=True)
@@ -228,49 +281,22 @@ def post_process(outputs):
         return []
 
 def detect_objects(image: np.ndarray, optimized_for_streaming: bool = False) -> List[Detection]:
-    """
-    Run object detection on a processed image.
+    # ... existing code ...
     
-    Args:
-        image: Processed image as numpy array
-        optimized_for_streaming: If True, use faster but potentially less accurate detection
+    # Run inference
+    outputs = MODEL.run(None, {input_name: image.astype(np.float32)})
     
-    Returns:
-        List of Detection objects with category, confidence, and bounding box
-    """
-    if MODEL is None:
-        raise ValueError("Model not loaded. Please initialize the model first.")
+    # Debug: Print output information
+    logger.info(f"Output type: {type(outputs)}")
+    if isinstance(outputs, list):
+        for i, out in enumerate(outputs):
+            logger.info(f"Output[{i}] shape: {out.shape}, dtype: {out.dtype}")
+            logger.info(f"Output[{i}] sample values: {out.flatten()[:10]}")
+    else:
+        logger.info(f"Output shape: {outputs.shape}, dtype: {outputs.dtype}")
+        logger.info(f"Output sample values: {outputs.flatten()[:10]}")
     
-    try:
-        # Get the input tensor name from the model
-        input_name = MODEL.get_inputs()[0].name
-        
-        # Prepare input in the correct format for the model
-        # For ONNX models, check the expected input shape
-        input_shape = MODEL.get_inputs()[0].shape
-        
-        # Reshape input if needed
-        if len(input_shape) == 4:
-            # Check if model expects batch dimension
-            if input_shape[0] == 1 or input_shape[0] == -1:
-                # Check channel order (NCHW vs NHWC)
-                if input_shape[1] == 3:  # NCHW
-                    if image.shape[1] != 3 and image.shape[3] == 3:
-                        # Convert from NHWC to NCHW if needed
-                        image = np.transpose(image, (0, 3, 1, 2))
-                else:  # NHWC
-                    if image.shape[1] == 3 and image.shape[3] != 3:
-                        # Convert from NCHW to NHWC if needed
-                        image = np.transpose(image, (0, 2, 3, 1))
-        
-        # Run inference
-        outputs = MODEL.run(None, {input_name: image.astype(np.float32)})
-        
-        # Post-process outputs to get detections
-        detections = post_process(outputs)
-        
-        return detections
+    # Post-process outputs to get detections
+    detections = post_process(outputs)
     
-    except Exception as e:
-        logger.error(f"Detection error: {e}")
-        raise ValueError(f"Failed to run detection: {e}")
+    return detections
