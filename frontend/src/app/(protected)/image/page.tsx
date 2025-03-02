@@ -1,15 +1,6 @@
 "use client"
 import { TrashData } from "@/utils/gpt-image-analysis";
-
-
-const dummyResponse = {
-    "bin": "Recycling",
-    "confidence": 0.95,
-    "material": "paper",
-    "item": "Newspaper",
-    "success": true,
-    "imageSrc": null
-}
+import { useAuth } from "@/app/hooks/AuthHook";
 
 
 import React, { useRef, useEffect, useState } from 'react';
@@ -71,15 +62,17 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
     );
 };
 
-const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete }: { 
+const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId }: { 
     isWebcamOpen: boolean, 
     setIsWebcamOpen: (isWebcamOpen: boolean) => void,
-    onScanComplete: (data: any) => void 
+    onScanComplete: (data: any) => void,
+    userId: string
 }) => {
     const webcamRef = useRef(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const capture = React.useCallback(async () => {
+        if(isAnalyzing) return {success: false, imageSrc: null};
         try {
             const imageSrc = webcamRef.current.getScreenshot();
             
@@ -87,15 +80,14 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete }: {
             if(!imageSrc) {
                 return { success: false, imageSrc: null };
             }
+            setIsAnalyzing(true);
             return {success: true,imageSrc};
         } catch (error) {
             console.error("Error analyzing image:", error);
             return { success: false, imageSrc: null };
-        } finally {
-            setIsAnalyzing(false);
         }
      
-    }, [webcamRef]);
+    }, [webcamRef, isAnalyzing]);
 
 
     const handleClassifyImage = async (imageSrc: string) => {
@@ -103,6 +95,7 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete }: {
             method: "POST",
             body: JSON.stringify({ image: imageSrc }),
         });
+
 
         if (!result.ok) {
             throw new Error("Failed to classify image");
@@ -113,17 +106,27 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete }: {
     }
 
     useEffect(() => {
+        if(isAnalyzing) return;
         if (!isWebcamOpen) return;
 
         const interval = setInterval(async () => {
             const response = await capture();
             console.log("response: ", response);
-            if (response.success) {
+            if (response.success && !isAnalyzing) {
                 console.log("Generating classification...");
                 const data = await handleClassifyImage(response.imageSrc);
                 console.log("JSON DATA: ", data)
+                if(!(data.item == "N/A")) {
+                    const result = await fetch("/api/image", {
+                        method: "POST",
+                        body: JSON.stringify({ imageData: response.imageSrc, item: data.item, category: data.category, insight: data.insight, bin: data.bin, userId }),
+                    });
+                    console.log("IMAGE SRC: ", response.imageSrc);
+                }
                 onScanComplete(data);
+                setIsAnalyzing(true);
                 setIsWebcamOpen(false);
+                return;
             }
         }, 1000);
 
@@ -157,6 +160,7 @@ export default function Home() {
     const [isWebcamOpen, setIsWebcamOpen] = useState(false);
     const [modalData, setModalData] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { user, loading } = useAuth();
 
     const handleScanComplete = (data) => {
         setModalData(data);
@@ -182,6 +186,7 @@ export default function Home() {
                                 isWebcamOpen={isWebcamOpen} 
                                 setIsWebcamOpen={setIsWebcamOpen}
                                 onScanComplete={handleScanComplete}
+                                userId={user?.uid}
                             />
                             <div className="flex justify-center">
                                 <button 
