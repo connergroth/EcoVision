@@ -12,6 +12,7 @@ interface WasteItem {
     category: 'Recycling' | 'Trash' | 'Compost';
     bin: string;
     imageUrl?: string;
+    insight?: string;
 }
 
 const formatFirebaseDate = (date: any) => {
@@ -23,7 +24,7 @@ const formatFirebaseDate = (date: any) => {
     return new Date(date).toLocaleDateString('en-US', options);
 }
 
-const ImageModal = ({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {
+const ImageModal = ({ imageUrl, onClose, item }: { imageUrl: string; onClose: () => void; item: WasteItem }) => {
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6"
              onClick={onClose}>
@@ -42,8 +43,30 @@ const ImageModal = ({ imageUrl, onClose }: { imageUrl: string; onClose: () => vo
                     <img 
                         src={imageUrl} 
                         alt="Waste Item" 
-                        className="w-full h-auto max-h-[70vh] object-contain rounded-md"
+                        className="w-full h-auto max-h-[60vh] object-contain rounded-md mb-4"
                     />
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-semibold text-gray-800">{item.item}</h3>
+                            <div className="flex items-center gap-3">
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                    item.bin === 'Recycling' ? 'bg-green-100 text-green-800' :
+                                    item.bin === 'Compost' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                }`}>
+                                    {item.bin}
+                                </span>
+                                <span className="text-gray-500 text-sm">
+                                    {formatFirebaseDate(item.createdAt)}
+                                </span>
+                            </div>
+                        </div>
+                        {item.insight && (
+                            <div className="bg-blue-50 p-4 rounded-lg">
+                                <p className="text-blue-800 text-sm leading-relaxed">{item.insight}</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
@@ -89,6 +112,7 @@ const History = () => {
                 <ImageModal 
                     imageUrl={selectedImage} 
                     onClose={() => setSelectedImage(null)} 
+                    item={trashData.find(item => item.imageUrl === selectedImage)!}
                 />
             )}
             
@@ -125,7 +149,7 @@ const History = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <button 
                                         onClick={() => setSelectedImage(item.imageUrl)}
-                                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                        className="cursor-pointer px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700"
                                     >
                                         View Image
                                     </button>

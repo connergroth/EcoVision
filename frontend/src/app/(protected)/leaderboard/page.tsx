@@ -45,7 +45,6 @@ export default function LeaderboardPage() {
         const fetchLeaderboard = async () => {
             const response = await fetch(`/api/leaderboard`);
             const data = await response.json();
-            console.log(data);
 
             const leaderboardData = data.map((entry: any) => ({
               ...entry,

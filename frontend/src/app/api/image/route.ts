@@ -82,12 +82,17 @@ export async function POST(request: NextRequest) {
         await file.save(imageBuffer, {
             metadata: {
                 contentType: 'image/jpeg',
-                cacheControl: 'public, max-age=31536000' // Optional: Add caching headers
+                cacheControl: 'public, max-age=31536000'
             }
         });
 
-        const imageUrl = `https://storage.googleapis.com/trash-app-images/${filename}`;
+        // Get the signed URL for immediate access
+        const [signedUrl] = await file.getSignedUrl({
+            action: 'read',
+            expires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours from now
+        });
 
+        const imageUrl = signedUrl;
 
         const trashData = {
             item: item,
