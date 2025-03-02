@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a9976925-7c98-407d-ba81-4f44fa9e52fe" alt="EcoVision" width="100%" />
+</p>
+
 # 🌱 EcoVision: Smart Recycling Detection App
 ## Project for the [AMD AI](https://github.com/Xilinx/mlir-aie) track at HackCU11 
 
@@ -11,6 +15,7 @@ EcoVision leverages AMD Ryzen™ AI PC technology to optimize our object detecti
 [![EcoVision Demo](https://img.shields.io/badge/Watch%20Demo-Video-red?style=for-the-badge)](https://example.com/demo-video)
 
 ## Problem Statement
+
 
 Improper waste disposal and low recycling rates remain significant environmental challenges:
 - Many people are unsure about which items can be recycled
