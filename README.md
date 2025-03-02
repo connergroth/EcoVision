@@ -17,7 +17,6 @@ EcoVision leverages AMD Ryzen™ AI PC technology to optimize our object detecti
 
 ## 🚀 Problem Statement
 
-
 Improper waste disposal and low recycling rates remain significant environmental challenges:
 - Many people are unsure about which items can be recycled
 - Recycling rules vary by location and can be confusing
@@ -25,6 +24,12 @@ Improper waste disposal and low recycling rates remain significant environmental
 - Limited knowledge about the environmental impact of individual actions
 
 EcoVision addresses these challenges by providing real-time identification, personalized guidance, and gamification elements to make recycling more accessible and engaging.
+
+## Test Images
+![image](https://github.com/user-attachments/assets/8c09f5f2-8361-4086-a5c7-bc3f3caea2b7)
+![image](https://github.com/user-attachments/assets/88eb3988-c121-454d-8832-d6eb5ef5f80f)
+![image](https://github.com/user-attachments/assets/35dd10bd-35a9-4265-ab4b-e6cdfaeb2317)
+
 
 ## ✨ Key Features
 
