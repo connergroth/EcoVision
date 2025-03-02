@@ -25,7 +25,22 @@ Improper waste disposal and low recycling rates remain significant environmental
 
 EcoVision addresses these challenges by providing real-time identification, personalized guidance, and gamification elements to make recycling more accessible and engaging.
 
-## Sample Test Images
+## 🔥 AMD Ryzen AI Integration
+
+We leveraged Xilinx's MLIR-AIE framework for model optimization and NPU acceleration:
+
+1. **MLIR-AIE Compilation Pipeline**:
+   - Used [Xilinx MLIR-AIE](https://github.com/Xilinx/mlir-aie) compiler infrastructure 
+   - Implemented MLIR (Multi-Level Intermediate Representation) to target AMD's AI Engine architecture
+   - Applied specialized graph optimizations for AMD NPU execution
+
+2. **Quantization Process**:
+   - Performed post-training quantization to reduce model precision from FP32 to INT8
+   - Applied per-channel quantization to minimize accuracy loss
+   - Calibrated quantization parameters using representative dataset samples
+   - Generated quantized model variants optimized specifically for AMD NPU execution
+
+## 🖼️ Sample Training Images
 <div align="center">
   <p float="left">
     <img src="https://github.com/user-attachments/assets/8584e4e2-80d4-443c-b525-f7f822df41c8" width="48%" />
@@ -39,7 +54,7 @@ EcoVision addresses these challenges by providing real-time identification, pers
 ## ✨ Key Features
 
 - **Real-time object detection**: Identify recyclable items using your device's camera
-- **AI-enhanced information**: Get detailed, contextual information about each item powered by DeepSeek models
+- **AI-enhanced information**: Get detailed, contextual information about each item powered by the ChatGPT API
 - **Environmental impact tracking**: Earn points for proper recycling and see your cumulative positive impact
 - **User history**: Review past scans and track your recycling progress over time
 - **Leaderboard**: Compete with others in your community to promote sustainable behaviors
@@ -52,39 +67,14 @@ EcoVision addresses these challenges by providing real-time identification, pers
 - **Authentication**: Firebase Authentication
 - **Database**: Firebase Firestore
 - **Storage**: Firebase Storage
-- **Object Detection**: TensorFlow with NPU acceleration support
-- **AI Text Generation**: DeepSeek model integration
+- **Object Detection**: YOLOv8 model with ChatGPT classification
+- **AI Text Generation**: ChatGPT custom text generation
 
 ### Frontend
-- **Framework**: Next.js (React) with TypeScript
+- **Framework**: Next.js with TypeScript
 - **Styling**: Tailwind CSS
 - **State Management**: React Hooks
-- **Camera Integration**: react-webcam
-- **Real-time Communication**: WebSockets
 - **Authentication**: Firebase SDK
-
-## 🖥️ System Architecture
-
-The application follows a microservices architecture:
-- **Frontend Service**: Next.js application serving the UI
-- **Detection Service**: FastAPI backend handling image processing and ML inference
-- **User Service**: Manages user data, history, and statistics
-- **DeepSeek Integration Service**: Communicates with DeepSeek models for enhanced content generation
-
-## 🤖 AI Models
-
-### Object Detection
-- Custom YOLOv8 model fine-tuned on a dataset of recyclable materials
-- Optimized for mobile and edge devices with NPU support
-
-### DeepSeek Integration
-- Uses DeepSeek models to generate detailed, contextual information about detected items
-- Custom prompt engineering to extract structured information about:
-  - Material properties
-  - Disposal instructions
-  - Environmental impact
-  - Interesting facts
-- Response caching and rate limiting for efficient operation
 
 ## 🌎 Environmental Impact
 
@@ -97,3 +87,120 @@ By using EcoVision, users can:
 The application itself is designed to be environmentally friendly:
 - Optimized for low power consumption with edge ML
 - Efficient API design to minimize data transfer
+
+## 🖥️ System Architecture
+
+```
+Directory structure:
+└── connergroth-ecovision/
+    ├── README.md
+    ├── frontend/
+    │   ├── README.md
+    │   ├── Dockerfile
+    │   ├── eslint.config.mjs
+    │   ├── next.config.ts
+    │   ├── package-lock.json
+    │   ├── package.json
+    │   ├── postcss.config.mjs
+    │   ├── tsconfig.json
+    │   ├── .dockerignore
+    │   ├── .gitignore
+    │   ├── public/
+    │   └── src/
+    │       ├── app/
+    │       │   ├── globals.css
+    │       │   ├── layout.tsx
+    │       │   ├── (protected)/
+    │       │   │   ├── layout.tsx
+    │       │   │   ├── page.tsx
+    │       │   │   ├── history/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── image/
+    │       │   │   │   └── page.tsx
+    │       │   │   └── leaderboard/
+    │       │   │       └── page.tsx
+    │       │   ├── api/
+    │       │   │   ├── apiClient.ts
+    │       │   │   ├── chat/
+    │       │   │   │   └── route.ts
+    │       │   │   ├── classify/
+    │       │   │   │   └── route.ts
+    │       │   │   ├── image/
+    │       │   │   │   └── route.ts
+    │       │   │   ├── leaderboard/
+    │       │   │   │   └── route.ts
+    │       │   │   └── user-trash/
+    │       │   │       └── route.ts
+    │       │   ├── auth/
+    │       │   │   └── page.tsx
+    │       │   ├── components/
+    │       │   │   ├── LoadingPage.tsx
+    │       │   │   ├── NavBar.tsx
+    │       │   │   ├── SignIn.tsx
+    │       │   │   ├── WebSocketDetector.tsx
+    │       │   │   └── WebcamDetection.tsx
+    │       │   └── hooks/
+    │       │       └── AuthHook.jsx
+    │       ├── firebase/
+    │       │   ├── firebaseAdminConfig.ts
+    │       │   └── firebaseConfig.ts
+    │       └── utils/
+    │           ├── gpt-image-analysis.ts
+    │           └── gpt-image-classifier.ts
+    ├── runs/
+    │   └── detect/
+    │       ├── train/
+    │       │   └── args.yaml
+    │       ├── train2/
+    │       │   └── args.yaml
+    │       └── train3/
+    │           └── args.yaml
+    └── trained models/
+        ├── data/
+        │   ├── anchors.npy
+        │   ├── coco.names
+        │   ├── data_collection.py
+        │   ├── strides.npy
+        │   ├── trashnet.zip
+        │   ├── custom_dataset/
+        │   │   └── dataset.yaml
+        │   ├── models/
+        │   │   └── yolov8m.onnx
+        │   └── trashnet-master/
+        │       ├── README.md
+        │       ├── DataLoader.lua
+        │       ├── LICENSE
+        │       ├── model.lua
+        │       ├── plot.lua
+        │       ├── shuffle.lua
+        │       ├── test.lua
+        │       ├── train.lua
+        │       ├── utils.lua
+        │       ├── weight-init.lua
+        │       ├── .gitignore
+        │       └── data/
+        │           ├── constants.py
+        │           ├── dataset-resized.zip
+        │           ├── one-indexed-files-notrash_test.txt
+        │           ├── one-indexed-files-notrash_train.txt
+        │           ├── one-indexed-files-notrash_val.txt
+        │           ├── one-indexed-files.txt
+        │           ├── resize.py
+        │           └── zero-indexed-files.txt
+        └── model/
+            ├── best1.onnx
+            ├── best1.pt
+            ├── modelQuantizer.ipynb
+            ├── testy.py
+            └── test_images/
+```
+
+The application follows a microservices architecture:
+
+- **Frontend Service**: Next.js application serving the UI and handling all routes. Also performs image processing and ML inference directly in the browser. 
+
+- **Detection Service**: FastAPI backend providing additional ML capabilities for more complex image analysis tasks. Optimized for AMD GPU/NPU acceleration when deployed on compatible hardware.
+
+- **User Service**: Manages user data, history, and statistics.
+
+- **OpenAI Integration Service**: Communicates with ChatGPT APIs for enhanced content generation and advanced image analysis.
