@@ -1,10 +1,10 @@
 "use client"
 
 import React from 'react';
-import WebcamDetection from '../components/WebcamDetection';
-import { useAuth } from '../hooks/AuthHook';
+import { useAuth } from '../../hooks/AuthHook';
 import { useRouter } from 'next/navigation';
-import LoadingPage from '../components/LoadingPage';
+import LoadingPage from '../../components/LoadingPage';
+import WebcamDetection from '../../components/WebcamDetection';
 
 export default function ImagePage() {
     const { user, loading } = useAuth();
