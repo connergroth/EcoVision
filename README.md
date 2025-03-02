@@ -33,7 +33,7 @@ EcoVision addresses these challenges by providing real-time identification, pers
 - **Environmental impact tracking**: Earn points for proper recycling and see your cumulative positive impact
 - **User history**: Review past scans and track your recycling progress over time
 - **Leaderboard**: Compete with others in your community to promote sustainable behaviors
-- **Educational content**: Learn interesting facts and proper disposal methods for various materials
+- **Educational content**: Learn facts and proper disposal methods for various materials
 
 ## 💻 Tech Stack
 
@@ -44,7 +44,6 @@ EcoVision addresses these challenges by providing real-time identification, pers
 - **Storage**: Firebase Storage
 - **Object Detection**: TensorFlow with NPU acceleration support
 - **AI Text Generation**: DeepSeek model integration
-- **Deployment**: Docker, Kubernetes
 
 ### Frontend
 - **Framework**: Next.js (React) with TypeScript
@@ -53,12 +52,6 @@ EcoVision addresses these challenges by providing real-time identification, pers
 - **Camera Integration**: react-webcam
 - **Real-time Communication**: WebSockets
 - **Authentication**: Firebase SDK
-
-### Infrastructure
-- **API Gateway**: NGINX
-- **Monitoring**: Prometheus & Grafana
-- **Logging**: Loguru
-- **CI/CD**: GitHub Actions
 
 ## 🖥️ System Architecture
 
@@ -73,7 +66,6 @@ The application follows a microservices architecture:
 ### Object Detection
 - Custom YOLOv8 model fine-tuned on a dataset of recyclable materials
 - Optimized for mobile and edge devices with NPU support
-- Categories: Plastic, Paper, Glass, Metal, Electronics, Compost
 
 ### DeepSeek Integration
 - Uses DeepSeek models to generate detailed, contextual information about detected items
@@ -95,4 +87,3 @@ By using EcoVision, users can:
 The application itself is designed to be environmentally friendly:
 - Optimized for low power consumption with edge ML
 - Efficient API design to minimize data transfer
-- Server-side processing to extend mobile device battery life
