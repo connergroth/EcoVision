@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
-from app.endpoints import detection, leaderboard, scans
+from app.endpoints import detection, leaderboard, scans, websocket
 from app.services.firebase_service import verify_firebase_token
 from app.utils.logger import setup_logger
 
@@ -34,6 +34,7 @@ app.add_middleware(
 app.include_router(detection.router, prefix="/api/v1", tags=["Detection"])
 app.include_router(scans.router, prefix="/api/v1", tags=["Scans"])
 app.include_router(leaderboard.router, prefix="/api/v1", tags=["Leaderboard"])
+app.include_router(websocket.router, tags=["WebSocket"])
 
 @app.get("/")
 async def root():
