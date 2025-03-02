@@ -5,7 +5,7 @@
 
 # 🌱 EcoVision: Smart Recycling Detection App
 ## Project for the [AMD AI](https://github.com/Xilinx/mlir-aie) track at HackCU11 
-[![My Skills](https://skillicons.dev/icons?i=nodejs,nextjs,react,python,tailwind,tensorflow,pytorch,vscode,opencv,firebase,git,docker)](https://skillicons.dev) </br>
+[![My Skills](https://skillicons.dev/icons?i=nodejs,nextjs,react,python,tailwind,tensorflow,pytorch,vscode,opencv,firebase,git,docker,anaconda)](https://skillicons.dev) </br>
 EcoVision is an intelligent recycling assistant that uses computer vision and AI to help users identify recyclable items, learn proper disposal methods, and track their environmental impact.
 
 ## 🔲 AMD AI PC Implementation
