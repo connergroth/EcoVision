@@ -94,6 +94,40 @@ The application itself is designed to be environmentally friendly:
 Directory structure:
 └── connergroth-ecovision/
     ├── README.md
+    ├── yolov8m.pt
+    ├── backend/
+    │   ├── Dockerfile
+    │   ├── docker-compose.yml
+    │   ├── requirements.txt
+    │   └── app/
+    │       ├── requirements.txt
+    │       ├── .gitignore
+    │       ├── endpoints/
+    │       │   ├── __init__.py
+    │       │   ├── detection.py
+    │       │   ├── leaderboard.py
+    │       │   ├── scans.py
+    │       │   └── websocket.py
+    │       ├── models/
+    │       │   └── yolov8.ipynb
+    │       ├── services/
+    │       │   ├── __init__.py
+    │       │   ├── detection_service.py
+    │       │   ├── firebase_service.py
+    │       │   └── npu_service.py
+    │       ├── training/
+    │       │   ├── annotation_setup.py
+    │       │   ├── data_augmentation.py
+    │       │   ├── hyperparameter_tuning.py
+    │       │   ├── prepare_trashnet.py
+    │       │   ├── test_model.py
+    │       │   ├── train_yolov8.py
+    │       │   └── training_pipeline.py
+    │       └── utils/
+    │           ├── __init__.py
+    │           ├── enviroment.py
+    │           ├── firebase_check.py
+    │           └── logger.py
     ├── frontend/
     │   ├── README.md
     │   ├── Dockerfile
@@ -147,52 +181,7 @@ Directory structure:
     │       └── utils/
     │           ├── gpt-image-analysis.ts
     │           └── gpt-image-classifier.ts
-    ├── runs/
-    │   └── detect/
-    │       ├── train/
-    │       │   └── args.yaml
-    │       ├── train2/
-    │       │   └── args.yaml
-    │       └── train3/
-    │           └── args.yaml
-    └── trained models/
-        ├── data/
-        │   ├── anchors.npy
-        │   ├── coco.names
-        │   ├── data_collection.py
-        │   ├── strides.npy
-        │   ├── trashnet.zip
-        │   ├── custom_dataset/
-        │   │   └── dataset.yaml
-        │   ├── models/
-        │   │   └── yolov8m.onnx
-        │   └── trashnet-master/
-        │       ├── README.md
-        │       ├── DataLoader.lua
-        │       ├── LICENSE
-        │       ├── model.lua
-        │       ├── plot.lua
-        │       ├── shuffle.lua
-        │       ├── test.lua
-        │       ├── train.lua
-        │       ├── utils.lua
-        │       ├── weight-init.lua
-        │       ├── .gitignore
-        │       └── data/
-        │           ├── constants.py
-        │           ├── dataset-resized.zip
-        │           ├── one-indexed-files-notrash_test.txt
-        │           ├── one-indexed-files-notrash_train.txt
-        │           ├── one-indexed-files-notrash_val.txt
-        │           ├── one-indexed-files.txt
-        │           ├── resize.py
-        │           └── zero-indexed-files.txt
-        └── model/
-            ├── best1.onnx
-            ├── best1.pt
-            ├── modelQuantizer.ipynb
-            ├── testy.py
-            └── test_images/
+
 ```
 
 The application follows a microservices architecture:
