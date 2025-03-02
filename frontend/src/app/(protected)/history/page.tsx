@@ -4,27 +4,56 @@ import {useEffect, useState} from 'react';
 import { useAuth } from '@/app/hooks/AuthHook';
 
 interface WasteItem {
-    date: string;
+    createdAt: {
+        _seconds: number;
+        _nanoseconds: number;
+    };
     item: string;
     category: 'Recycling' | 'Trash' | 'Compost';
-    weight: number;
+    bin: string;
+    imageUrl?: string;
 }
 
-const dummyData: WasteItem[] = [
-    { date: '2024-03-20', item: 'Cardboard Box', category: 'Recycling', weight: 0.5 },
-    { date: '2024-03-20', item: 'Food Scraps', category: 'Compost', weight: 0.3 },
-    { date: '2024-03-19', item: 'Plastic Bottles', category: 'Recycling', weight: 0.2 },
-    { date: '2024-03-19', item: 'Paper Bags', category: 'Recycling', weight: 0.1 },
-    { date: '2024-03-18', item: 'Coffee Grounds', category: 'Compost', weight: 0.4 },
-    { date: '2024-03-18', item: 'Candy Wrappers', category: 'Trash', weight: 0.1 },
-];
+const formatFirebaseDate = (date: any) => {
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+    // Convert Firestore Timestamp to JavaScript Date
+    if (date && date._seconds) {
+        return new Date(date._seconds * 1000).toLocaleDateString('en-US', options);
+    }
+    return new Date(date).toLocaleDateString('en-US', options);
+}
+
+const ImageModal = ({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6"
+             onClick={onClose}>
+            <div className="relative bg-white rounded-lg shadow-[inset_0_0_20px_rgba(0,0,0,0.05)] max-w-4xl w-full"
+                 onClick={e => e.stopPropagation()}>
+                <button 
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-green-600 z-10 transition-colors"
+                    aria-label="Close modal"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                <div className="p-8">
+                    <img 
+                        src={imageUrl} 
+                        alt="Waste Item" 
+                        className="w-full h-auto max-h-[70vh] object-contain rounded-md"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
 
 const History = () => {
-
-
     const {user, loading} = useAuth();
-
     const [trashData, setTrashData] = useState<WasteItem[]>([]);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchTrashData = async () => {
@@ -40,7 +69,13 @@ const History = () => {
                     return;
                 }
                 const data = await response.json();
-                setTrashData(data);
+
+                const formattedData = data.map((item: any) => ({
+                    ...item,
+                    createdAt: item.createdAt || item.date,
+                }));
+
+                setTrashData(formattedData);
             }
         };
 
@@ -50,6 +85,13 @@ const History = () => {
 
     return (
         <div className="p-6 max-w-6xl mx-auto">
+            {selectedImage && (
+                <ImageModal 
+                    imageUrl={selectedImage} 
+                    onClose={() => setSelectedImage(null)} 
+                />
+            )}
+            
             <h1 className="text-3xl font-bold mb-8 text-center">Waste Management History</h1>
             
             <div className="overflow-x-auto shadow-lg rounded-lg">
@@ -63,25 +105,30 @@ const History = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {dummyData.map((item, index) => (
+                        {trashData.map((item, index) => (
                             <tr key={index} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {new Date(item.date).toLocaleDateString()}
+                                    {formatFirebaseDate(item.createdAt)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {item.item}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        item.category === 'Recycling' ? 'bg-green-100 text-green-800' :
-                                        item.category === 'Compost' ? 'bg-yellow-100 text-yellow-800' :
+                                        item.bin === 'Recycling' ? 'bg-green-100 text-green-800' :
+                                        item.bin === 'Compost' ? 'bg-yellow-100 text-yellow-800' :
                                         'bg-red-100 text-red-800'
                                     }`}>
-                                        {item.category}
+                                        {item.bin}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {item.weight}
+                                    <button 
+                                        onClick={() => setSelectedImage(item.imageUrl)}
+                                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                                    >
+                                        View Image
+                                    </button>
                                 </td>
                             </tr>
                         ))}
