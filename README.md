@@ -25,7 +25,10 @@ Improper waste disposal and low recycling rates remain significant environmental
 
 EcoVision addresses these challenges by providing real-time identification, personalized guidance, and gamification elements to make recycling more accessible and engaging.
 
-## Sample Test Images
+## Object Classification Model
+We trained 2 models 
+
+## 🖼️ Sample Training Images
 <div align="center">
   <p float="left">
     <img src="https://github.com/user-attachments/assets/8584e4e2-80d4-443c-b525-f7f822df41c8" width="48%" />
@@ -65,11 +68,121 @@ EcoVision addresses these challenges by providing real-time identification, pers
 
 ## 🖥️ System Architecture
 
+```
+Directory structure:
+└── connergroth-ecovision/
+    ├── README.md
+    ├── frontend/
+    │   ├── README.md
+    │   ├── Dockerfile
+    │   ├── eslint.config.mjs
+    │   ├── next.config.ts
+    │   ├── package-lock.json
+    │   ├── package.json
+    │   ├── postcss.config.mjs
+    │   ├── tsconfig.json
+    │   ├── .dockerignore
+    │   ├── .gitignore
+    │   ├── public/
+    │   └── src/
+    │       ├── app/
+    │       │   ├── globals.css
+    │       │   ├── layout.tsx
+    │       │   ├── (protected)/
+    │       │   │   ├── layout.tsx
+    │       │   │   ├── page.tsx
+    │       │   │   ├── history/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── image/
+    │       │   │   │   └── page.tsx
+    │       │   │   └── leaderboard/
+    │       │   │       └── page.tsx
+    │       │   ├── api/
+    │       │   │   ├── apiClient.ts
+    │       │   │   ├── chat/
+    │       │   │   │   └── route.ts
+    │       │   │   ├── classify/
+    │       │   │   │   └── route.ts
+    │       │   │   ├── image/
+    │       │   │   │   └── route.ts
+    │       │   │   ├── leaderboard/
+    │       │   │   │   └── route.ts
+    │       │   │   └── user-trash/
+    │       │   │       └── route.ts
+    │       │   ├── auth/
+    │       │   │   └── page.tsx
+    │       │   ├── components/
+    │       │   │   ├── LoadingPage.tsx
+    │       │   │   ├── NavBar.tsx
+    │       │   │   ├── SignIn.tsx
+    │       │   │   ├── WebSocketDetector.tsx
+    │       │   │   └── WebcamDetection.tsx
+    │       │   └── hooks/
+    │       │       └── AuthHook.jsx
+    │       ├── firebase/
+    │       │   ├── firebaseAdminConfig.ts
+    │       │   └── firebaseConfig.ts
+    │       └── utils/
+    │           ├── gpt-image-analysis.ts
+    │           └── gpt-image-classifier.ts
+    ├── runs/
+    │   └── detect/
+    │       ├── train/
+    │       │   └── args.yaml
+    │       ├── train2/
+    │       │   └── args.yaml
+    │       └── train3/
+    │           └── args.yaml
+    └── trained models/
+        ├── data/
+        │   ├── anchors.npy
+        │   ├── coco.names
+        │   ├── data_collection.py
+        │   ├── strides.npy
+        │   ├── trashnet.zip
+        │   ├── custom_dataset/
+        │   │   └── dataset.yaml
+        │   ├── models/
+        │   │   └── yolov8m.onnx
+        │   └── trashnet-master/
+        │       ├── README.md
+        │       ├── DataLoader.lua
+        │       ├── LICENSE
+        │       ├── model.lua
+        │       ├── plot.lua
+        │       ├── shuffle.lua
+        │       ├── test.lua
+        │       ├── train.lua
+        │       ├── utils.lua
+        │       ├── weight-init.lua
+        │       ├── .gitignore
+        │       └── data/
+        │           ├── constants.py
+        │           ├── dataset-resized.zip
+        │           ├── one-indexed-files-notrash_test.txt
+        │           ├── one-indexed-files-notrash_train.txt
+        │           ├── one-indexed-files-notrash_val.txt
+        │           ├── one-indexed-files.txt
+        │           ├── resize.py
+        │           └── zero-indexed-files.txt
+        └── model/
+            ├── best1.onnx
+            ├── best1.pt
+            ├── modelQuantizer.ipynb
+            ├── testy.py
+            └── test_images/
+```
+
 The application follows a microservices architecture:
-- **Frontend Service**: Next.js application serving the UI
-- **Detection Service**: FastAPI backend handling image processing and ML inference
-- **User Service**: Manages user data, history, and statistics
-- **DeepSeek Integration Service**: Communicates with DeepSeek models for enhanced content generation
+
+- **Frontend Service**: Next.js application serving the UI and handling all routes. Also performs image processing and ML inference directly in the browser. Now includes AMD NPU acceleration for on-device inference when available, reducing latency and improving privacy by processing images directly on the user's device.
+
+- **Detection Service**: FastAPI backend providing additional ML capabilities for more complex image analysis tasks. Optimized for AMD GPU/NPU acceleration when deployed on compatible hardware.
+
+- **User Service**: Manages user data, history, and statistics.
+
+- **OpenAI Integration Service**: Communicates with ChatGPT APIs for enhanced content generation and advanced image analysis.
+
 
 ## 🤖 AI Models
 
