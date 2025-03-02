@@ -149,7 +149,7 @@ const History = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <button 
                                         onClick={() => setSelectedImage(item.imageUrl)}
-                                        className="cursor-pointer px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                                        className="cursor-pointer px-3 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded hover:from-emerald-600 hover:to-teal-600 transition-all duration-300"
                                     >
                                         View Image
                                     </button>
