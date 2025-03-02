@@ -1,0 +1,10 @@
+names:
+  0: plastic
+  1: metal
+  2: paper
+  3: glass
+  4: organic
+  5: other
+path: backend\data\custom_dataset
+train: images\train
+val: images\val
