@@ -9,7 +9,9 @@
 EcoVision is an intelligent recycling assistant that uses computer vision and AI to help users identify recyclable items, learn proper disposal methods, and track their environmental impact.
 
 ## 🔲 AMD AI PC Implementation
-EcoVision leverages AMD Ryzen™ AI PC technology to optimize our object detection pipeline. We've specifically engineered our YOLOv8 model to utilize the Neural Processing Unit (NPU) on AMD hardware, which provides significant performance improvements while reducing power consumption. This implementation enables real-time recyclable item detection directly on-device with minimal latency, making the app more responsive and energy-efficient for everyday use.
+EcoVision leverages AMD Ryzen™ AI PC technology to optimize our object detection pipeline. We've specifically engineered our YOLOv8 model to utilize the Neural Processing Unit (NPU) on AMD hardware, providing significant performance improvements while reducing power consumption.
+
+To enhance real-time object detection efficiency, we retrained a pretrained AMD/yolov8m COCO model from Hugging Face, utilizing cloud resources to fine-tune the model on custom datasets sourced from Roboflow. By leveraging NPU technology, we achieved superior efficiency and performance, enabling real-time recyclable item detection directly on-device with minimal latency. This implementation ensures a more responsive and energy-efficient experience for everyday use.
 
 ## Demo
 
