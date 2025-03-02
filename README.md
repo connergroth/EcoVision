@@ -2,6 +2,7 @@
   <img src="https://github.com/user-attachments/assets/a9976925-7c98-407d-ba81-4f44fa9e52fe" alt="EcoVision" width="100%" />
 </p>
 
+
 # 🌱 EcoVision: Smart Recycling Detection App
 ## Project for the [AMD AI](https://github.com/Xilinx/mlir-aie) track at HackCU11 
 
