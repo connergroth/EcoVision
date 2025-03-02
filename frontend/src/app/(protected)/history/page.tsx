@@ -1,5 +1,8 @@
 'use client';
 
+import {useEffect, useState} from 'react';
+import { useAuth } from '@/app/hooks/AuthHook';
+
 interface WasteItem {
     date: string;
     item: string;
@@ -17,6 +20,34 @@ const dummyData: WasteItem[] = [
 ];
 
 const History = () => {
+
+
+    const {user, loading} = useAuth();
+
+    const [trashData, setTrashData] = useState<WasteItem[]>([]);
+
+    useEffect(() => {
+        const fetchTrashData = async () => {
+            if (user) {
+                const response = await fetch(`/api/user-trash?userId=${user.uid}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if(!response.ok) {
+                    console.error('Failed to fetch trash data');
+                    return;
+                }
+                const data = await response.json();
+                setTrashData(data);
+            }
+        };
+
+        fetchTrashData();
+
+    }, [user]);
+
     return (
         <div className="p-6 max-w-6xl mx-auto">
             <h1 className="text-3xl font-bold mb-8 text-center">Waste Management History</h1>

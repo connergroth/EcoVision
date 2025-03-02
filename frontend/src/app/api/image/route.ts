@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { bucket } from "@/firebase/firebaseAdminConfig";
 import base64 from "base64-js";
+import { adminDb } from "@/firebase/firebaseAdminConfig";
+
 
 export async function GET(request: NextRequest) {
     const imageUrl = request.nextUrl.searchParams.get("imageUrl");
@@ -33,6 +35,8 @@ export async function POST(request: NextRequest) {
     try {
         const data = await request.json();
         const base64Image = data.imageData;
+        const { item, category, insight, bin, userId } = data;
+
 
         if (!base64Image) {
             return NextResponse.json({ error: 'No image data provided' }, { status: 400 });
@@ -44,21 +48,26 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Image size exceeds 5MB limit' }, { status: 400 });
         }
 
-        // Validate image type
-        const validMimeTypes = ['data:image/jpeg', 'data:image/png', 'data:image/gif'];
-        const isValidType = validMimeTypes.some(type => base64Image.startsWith(type));
-        if (!isValidType) {
-            return NextResponse.json({ error: 'Invalid image type. Supported types: JPEG, PNG, GIF' }, { status: 400 });
+        // Validate image type and format
+        if (!base64Image.includes('base64,')) {
+            return NextResponse.json({ error: 'Invalid image format. Must be a base64 data URL' }, { status: 400 });
         }
 
         // Remove the data URL prefix if present
-        const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+        const base64Data = base64Image.split('base64,')[1];
 
         // Validate base64 string
         try {
+            if (!base64Data || base64Data.trim() === '') {
+                return NextResponse.json({ error: 'Empty base64 data' }, { status: 400 });
+            }
             base64.toByteArray(base64Data);
         } catch (e) {
-            return NextResponse.json({ error: 'Invalid base64 encoding' }, { status: 400 });
+            console.error('Base64 validation error:', e);
+            return NextResponse.json({
+                error: 'Invalid base64 encoding. Please ensure the image is properly encoded',
+                details: e instanceof Error ? e.message : 'Unknown error'
+            }, { status: 400 });
         }
 
         // Convert base64 to buffer
@@ -75,6 +84,27 @@ export async function POST(request: NextRequest) {
                 cacheControl: 'public, max-age=31536000' // Optional: Add caching headers
             }
         });
+
+        const imageUrl = `https://storage.googleapis.com/trash-app-images/${filename}`;
+
+
+        const trashData = {
+            item: item,
+            category: category,
+            insight: insight,
+            bin: bin,
+            imageUrl: imageUrl,
+            createdAt: new Date()
+        }
+
+        // Create a new document in the "trash" subcollection under the user's document
+        const userTrashRef = adminDb
+            .collection("users")
+            .doc(userId)
+            .collection("trash")
+            .doc(); // This will auto-generate a new document ID
+
+        await userTrashRef.set(trashData);
 
         return NextResponse.json({
             success: true,

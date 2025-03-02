@@ -11,7 +11,6 @@ console.log("OPENAI_API_KEY: ", process.env.OPENAI_API_KEY);
 
 // Function to classify image
 export const classifyImage = async (imageString: string) => {
-    console.log("API KEY: ", process.env.OPENAI_API_KEY);
     try {
         const base64String = (imageString as string).split(',')[1]
 
