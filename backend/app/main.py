@@ -19,7 +19,8 @@ app = FastAPI(
 origins = [
     "http://localhost",
     "http://localhost:3000",  # Local React/Next.js development server
-    "https://ecovision.app",  # Production frontend
+    "https://ecovision.app", 
+     "http://127.0.0.1:8000", # Production frontend
 ]
 
 app.add_middleware(

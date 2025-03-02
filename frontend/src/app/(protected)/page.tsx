@@ -1,8 +1,34 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const Home = () => {
+
+    // useEffect(() => {
+
+    //     const fetchData = async () => {
+    //         try {
+    //             const res = await fetch("http://127.0.0.1:8000/health",
+    //                 {
+    //                     method: "GET",
+    //                 headers: {
+    //                     "Content-Type": "application/json"
+    //                 }
+    //             }
+    //         )
+    //         if(!res.ok) {
+    //             console.log("Error fetching data");
+    //             return;
+    //         }
+    //         const data = await res.json()
+    //         console.log(data)
+    //         } catch (error) {
+    //             console.error("Error fetching data:", error);
+    //         }
+    //     }
+    //     fetchData()
+    // }, [])
     const router = useRouter();
     return (
         <main className="min-h-screen bg-white flex flex-col items-center justify-center p-8 relative">
