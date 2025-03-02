@@ -45,7 +45,7 @@ const Home = () => {
                     Eco<span className="text-emerald-500">Vision</span>
                 </h1>
                 <p className="text-xl text-gray-600 max-w-xl mx-auto">
-                    Transforming the way we see sustainability
+                    Transforming the way we see sustainability 🌿
                 </p>
                 <button 
                     onClick={() => router.push("/image")} 

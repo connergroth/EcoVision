@@ -22,7 +22,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Eco Impact Leaderboard</h1>
+      <h1 className="text-3xl font-bold mb-6">Eco Impact Leaderboard 🌳</h1>
       
       <div className="mb-4">
         <label className="mr-2">Sort by:</label>
@@ -50,13 +50,18 @@ export default function LeaderboardPage() {
             {dummyData
               .sort((a, b) => b[sortBy] - a[sortBy])
               .map((entry, index) => (
-                <tr key={entry.username} className={index < 3 ? 'bg-green-50' : ''}>
+                <tr 
+                  key={entry.username} 
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     {index + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="text-sm font-medium text-gray-900">
+                        {index === 0 && '🥇 '}
+                        {index === 1 && '🥈 '}
+                        {index === 2 && '🥉 '}
                         {entry.username}
                       </div>
                     </div>

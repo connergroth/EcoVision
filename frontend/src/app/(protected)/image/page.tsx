@@ -38,7 +38,6 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
                 }
             )
             const data = await result.json();
-            console.log("data: ", data);
         } catch (error) {
             console.error("Error uploading image:", error);
         }
@@ -225,7 +224,7 @@ export default function Home() {
                         EcoVision
                     </h1>
                     <p className="text-slate-600 text-lg">
-                        Point your camera at any item to identify the correct recycling bin
+                        Point your camera at any item to identify the correct bin
                     </p>
                 </div>
                 
