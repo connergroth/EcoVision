@@ -62,11 +62,12 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
     );
 };
 
-const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId }: { 
+const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, email }: { 
     isWebcamOpen: boolean, 
     setIsWebcamOpen: (isWebcamOpen: boolean) => void,
     onScanComplete: (data: any) => void,
-    userId: string
+    userId: string,
+    email: string
 }) => {
     const webcamRef = useRef(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -119,7 +120,7 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId }
                 if(!(data.item == "N/A")) {
                     const result = await fetch("/api/image", {
                         method: "POST",
-                        body: JSON.stringify({ imageData: response.imageSrc, item: data.item, category: data.category, insight: data.insight, bin: data.bin, userId }),
+                        body: JSON.stringify({ imageData: response.imageSrc, item: data.item, category: data.category, insight: data.insight, bin: data.bin, userId, email }),
                     });
                     console.log("IMAGE SRC: ", response.imageSrc);
                 }
@@ -187,6 +188,7 @@ export default function Home() {
                                 setIsWebcamOpen={setIsWebcamOpen}
                                 onScanComplete={handleScanComplete}
                                 userId={user?.uid}
+                                email={user?.email}
                             />
                             <div className="flex justify-center">
                                 <button 
