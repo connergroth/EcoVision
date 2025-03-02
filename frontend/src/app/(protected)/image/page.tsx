@@ -12,74 +12,15 @@ const dummyResponse = {
 }
 
 
-const analyzeTrash = async (trashData: TrashData) => {
-    // Instead of making an API call, return the dummy response
-    return dummyResponse;
-}
-
 import React, { useRef, useEffect, useState } from 'react';
 import Webcam from "react-webcam";
 
 const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () => void, data: TrashData }) => {
-    const [aiInsight, setAiInsight] = useState("");
-    const [loading, setLoading] = useState(true);
-    console.log("data: ", data);
 
-
-    const handleImageUpload = async (imageSrc: string) => {
-        try {
-            const result = await fetch("/api/image",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ imageData: imageSrc }),
-                }
-            )
-            const data = await result.json();
-            console.log("data: ", data);
-        } catch (error) {
-            console.error("Error uploading image:", error);
-        }
+    const handleClose = () => {
+        onClose();
     }
-    
 
-    useEffect(() => {
-        if (!isOpen || !data) return;
-
-
-        if(data &&data.imageSrc) {
-            handleImageUpload(data.imageSrc);
-        }
-
-        setLoading(true);
-        const getAiInsight = async () => {
-            try {
-                const result = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ data: data }),
-                });
-
-                if (!result.ok) {
-                    throw new Error("Failed to fetch data");
-                }
-
-                const insightData = await result.json();
-                setAiInsight(insightData.response);
-            } catch (error) {
-                console.error("Error fetching insight:", error);
-                setAiInsight("Failed to load insights.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        getAiInsight();
-    }, [isOpen, data]);
 
     if (!isOpen) return null;
 
@@ -87,10 +28,9 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-8 z-50">
             <div className="bg-white rounded-2xl p-8 max-w-2xl w-full">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-green-800">Scan Result</h2>
-                    <button onClick={() => {
-                        onClose();
-                    }} className="cursor-pointer text-slate-500 hover:text-slate-700">
+                    <h2 className="text-2xl font-bold text-800">Scan Result</h2>
+                    <button onClick={handleClose}
+                     className="cursor-pointer text-slate-500 hover:text-slate-700">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -106,27 +46,16 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
                             <h3 className="font-semibold text-slate-700">Item Details</h3>
                             <div className="space-y-2 text-sm">
                                 <p className="text-slate-700"><span className="font-medium">Item:</span> {data.item}</p>
-                                <p className="text-slate-700"><span className="font-medium">Material:</span> {data.material}</p>
-                                <p className="text-slate-700"><span className="font-medium">Confidence:</span> {(data.confidence * 100).toFixed(0)}%</p>
+                                <p className="text-slate-700"><span className="font-medium">Material:</span> {data.category}</p>
                             </div>
                         </div>
                         <div className="space-y-3">
                             <h3 className="font-semibold text-slate-700">Insights</h3>
                             <div className="bg-blue-50 rounded-lg p-3">
-                                {loading ? (
-                                    <div className="flex flex-col items-center py-4 space-y-2">
-                                        <div className="flex space-x-1">
-                                            <div className="w-2 h-2 bg-emerald-600 rounded-full animate-[bounce_1s_infinite_0ms]"></div>
-                                            <div className="w-2 h-2 bg-emerald-600 rounded-full animate-[bounce_1s_infinite_200ms]"></div>
-                                            <div className="w-2 h-2 bg-emerald-600 rounded-full animate-[bounce_1s_infinite_400ms]"></div>
-                                        </div>
-                                        <p className="text-sm text-green-800">Getting AI insights...</p>
-                                    </div>
-                                ) : (
+           
                                     <p className="text-sm text-slate-600 leading-relaxed">
-                                        {aiInsight || "No insights available for this item."}
+                                        {data.insight}
                                     </p>
-                                )}
                             </div>
                         </div>
                     </div>
@@ -158,14 +87,30 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete }: {
             if(!imageSrc) {
                 return { success: false, imageSrc: null };
             }
-            return {...dummyResponse, imageSrc};
+            return {success: true,imageSrc};
         } catch (error) {
             console.error("Error analyzing image:", error);
             return { success: false, imageSrc: null };
         } finally {
             setIsAnalyzing(false);
         }
+     
     }, [webcamRef]);
+
+
+    const handleClassifyImage = async (imageSrc: string) => {
+        const result = await fetch("/api/classify", {
+            method: "POST",
+            body: JSON.stringify({ image: imageSrc }),
+        });
+
+        if (!result.ok) {
+            throw new Error("Failed to classify image");
+        }
+        const classifiedData = await result.json();
+        console.log("data: ", classifiedData);
+        return {...classifiedData, imageSrc};
+    }
 
     useEffect(() => {
         if (!isWebcamOpen) return;
@@ -174,10 +119,11 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete }: {
             const response = await capture();
             console.log("response: ", response);
             if (response.success) {
-                console.log(response.imageSrc)
-                onScanComplete(response);
-
-                    setIsWebcamOpen(false);
+                console.log("Generating classification...");
+                const data = await handleClassifyImage(response.imageSrc);
+                console.log("JSON DATA: ", data)
+                onScanComplete(data);
+                setIsWebcamOpen(false);
             }
         }, 1000);
 
