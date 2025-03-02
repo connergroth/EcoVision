@@ -2,7 +2,9 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import Webcam from "react-webcam";
-
+import { useAuth } from '../../hooks/AuthHook';
+import { useRouter } from 'next/navigation';
+import LoadingPage from '../../components/LoadingPage';
 const WebcamCapture = ({ isWebcamOpen }: { isWebcamOpen: boolean }) => {
     const webcamRef = useRef(null);
 
@@ -45,7 +47,8 @@ const WebcamCapture = ({ isWebcamOpen }: { isWebcamOpen: boolean }) => {
 
 export default function Home() {
     const [isWebcamOpen, setIsWebcamOpen] = useState(false);
-    
+
+
     return (
         <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto text-center">
