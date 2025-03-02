@@ -1,23 +1,11 @@
 import OpenAI from "openai";
 
-
 const deepseekKey = process.env.DEEPSEEK_API_KEY;
-
 
 const openai = new OpenAI({
     apiKey: deepseekKey,
     baseURL: 'https://api.deepseek.com',
 });
-
-
-interface User {
-    name: string;
-    major: string;
-    degree: string;
-    courseHistory: string[];
-    question: string;
-}
-
 
 export interface TrashData {
     item: string;

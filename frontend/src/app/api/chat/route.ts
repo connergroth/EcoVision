@@ -1,10 +1,12 @@
-import { NextRequest } from "next/server";
-import { analyzeTrash } from "@/utils/gpt-image-analysis";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { classifyImage } from "@/utils/gpt-image-classifier";
 
-export const POST = async (req: NextRequest) => {
-    const { data } = await req.json();
+export async function POST(request: NextRequest) {
+    const { image } = await request.json();
 
-    const response = await analyzeTrash(data);
-    return NextResponse.json({ response });
-};
+    const response = await classifyImage(image);
+
+    const parsedResponse = JSON.parse(response);
+
+    return NextResponse.json(parsedResponse);
+}

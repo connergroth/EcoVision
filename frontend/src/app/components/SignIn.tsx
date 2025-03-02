@@ -1,5 +1,7 @@
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "@/firebase/firebaseConfig";
+import Image from "next/image";
+
 const signInWithGoogle = async () => {
   const provider = new GoogleAuthProvider();
   try {
@@ -25,9 +27,11 @@ const SignIn = () => {
           onClick={handleGoogleSignIn}
           className="cursor-pointer w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-lg px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-green-500 transition-all duration-200 shadow-sm"
         >
-          <img
+          <Image
             src="/google.logo.svg"
             alt="Google"
+            width={20}
+            height={20}
             className="w-5 h-5"
           />
           Sign in with Google

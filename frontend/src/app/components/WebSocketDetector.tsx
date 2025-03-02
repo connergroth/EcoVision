@@ -1,11 +1,23 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../hooks/AuthHook';
 
+// Define type for detection object
+interface Detection {
+  category: string;
+  confidence: number;
+  bounding_box?: {
+    x_min: number;
+    y_min: number;
+    x_max: number;
+    y_max: number;
+  };
+}
+
 interface WebSocketDetectorProps {
-  onDetection: (detection: any) => void;
+  onDetection: (detection: Detection) => void;
   onError: (error: string) => void;
   isActive: boolean;
-  webcamRef: React.RefObject<any>;
+  webcamRef: React.RefObject<any>; // Consider replacing 'any' with a more specific type if possible
 }
 
 const WebSocketDetector: React.FC<WebSocketDetectorProps> = ({ 
@@ -19,81 +31,68 @@ const WebSocketDetector: React.FC<WebSocketDetectorProps> = ({
   const socketRef = useRef<WebSocket | null>(null);
   
   // Setup WebSocket connection
-  useEffect(() => {
+  const setupWebSocket = useCallback(async () => {
     if (!isActive || !user || !user.uid) return;
     
-    const setupWebSocket = async () => {
-      try {
-        // Close existing connection if any
-        if (socketRef.current) {
-          socketRef.current.close();
-        }
-        
-        // Get the auth token
-        const token = await getIdToken();
-        
-        // Create new WebSocket connection
-        const userId = user.uid;
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsHost = process.env.NEXT_PUBLIC_WS_HOST || window.location.host;
-        const wsUrl = `${wsProtocol}//${wsHost}/ws/detection/${userId}`;
-        
-        const ws = new WebSocket(wsUrl);
-        
-        // Store the socket reference
-        socketRef.current = ws;
-        setSocket(ws);
-        
-        // Setup event handlers
-        ws.onopen = () => {
-          console.log('WebSocket connection established');
-          // Send authentication message
-          ws.send(JSON.stringify({ token }));
-        };
-        
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            
-            if (data.status === 'error') {
-              onError(data.message || 'WebSocket error');
-              return;
-            }
-            
-            if (data.status === 'detection' && data.detection) {
-              onDetection(data.detection);
-            }
-          } catch (error) {
-            console.error('Error parsing WebSocket message:', error);
-          }
-        };
-        
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          onError('Connection error. Please try again.');
-        };
-        
-        ws.onclose = () => {
-          console.log('WebSocket connection closed');
-          socketRef.current = null;
-          setSocket(null);
-        };
-      } catch (error) {
-        console.error('Failed to setup WebSocket:', error);
-        onError('Failed to initialize detector. Please try again.');
-      }
-    };
-    
-    setupWebSocket();
-    
-    // Cleanup function
-    return () => {
+    try {
+      // Close existing connection if any
       if (socketRef.current) {
         socketRef.current.close();
+      }
+      
+      // Get the auth token
+      const token = await getIdToken();
+      
+      // Create new WebSocket connection
+      const userId = user.uid;
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsHost = process.env.NEXT_PUBLIC_WS_HOST || window.location.host;
+      const wsUrl = `${wsProtocol}//${wsHost}/ws/detection/${userId}`;
+      
+      const ws = new WebSocket(wsUrl);
+      
+      // Store the socket reference
+      socketRef.current = ws;
+      setSocket(ws);
+      
+      // Setup event handlers
+      ws.onopen = () => {
+        console.log('WebSocket connection established');
+        // Send authentication message
+        ws.send(JSON.stringify({ token }));
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.status === 'error') {
+            onError(data.message || 'WebSocket error');
+            return;
+          }
+          
+          if (data.status === 'detection' && data.detection) {
+            onDetection(data.detection);
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        onError('Connection error. Please try again.');
+      };
+      
+      ws.onclose = () => {
+        console.log('WebSocket connection closed');
         socketRef.current = null;
         setSocket(null);
-      }
-    };
+      };
+    } catch (error) {
+      console.error('Failed to setup WebSocket:', error);
+      onError('Failed to initialize detector. Please try again.');
+    }
   }, [user, isActive, getIdToken, onError]);
   
   // Function to send frame to WebSocket
@@ -115,6 +114,21 @@ const WebSocketDetector: React.FC<WebSocketDetectorProps> = ({
     }
   }, [webcamRef]);
   
+  // Setup WebSocket when active
+  useEffect(() => {
+    if (isActive) {
+      setupWebSocket();
+    }
+    
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+        setSocket(null);
+      }
+    };
+  }, [isActive, setupWebSocket]);
+  
   // Continuously send frames to WebSocket
   useEffect(() => {
     if (!isActive || !socket) return;
@@ -126,7 +140,7 @@ const WebSocketDetector: React.FC<WebSocketDetectorProps> = ({
     return () => {
       clearInterval(interval);
     };
-  }, [isActive, socket, sendFrameToSocket]);
+  }, [isActive, socket, sendFrameToSocket, onDetection]);
   
   return null; // This is a non-visual component
 };
