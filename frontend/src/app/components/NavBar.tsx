@@ -34,11 +34,17 @@ const NavBar = () => {
             >
               History
             </Link>
+            <Link 
+              href="/leaderboard" 
+              className="text-gray-700 font-medium hover:text-emerald-600 transition-all duration-200 text-sm"
+            >
+              Leaderboard
+            </Link>
           </div>
           
           <button
             onClick={handleSignOut}
-            className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+            className="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
           >
             Sign Out
           </button>

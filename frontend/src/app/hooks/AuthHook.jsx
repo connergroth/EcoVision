@@ -1,8 +1,9 @@
+"use client";
 import { auth } from "@/firebase/firebaseConfig";
 import { useState, useEffect, createContext, useContext } from "react";
-import { 
-  onAuthStateChanged, 
-  signInWithPopup, 
+import {
+  onAuthStateChanged,
+  signInWithPopup,
   GoogleAuthProvider,
   signOut as firebaseSignOut
 } from "firebase/auth";
@@ -11,8 +12,8 @@ import {
 const AuthContext = createContext({
   user: null,
   loading: true,
-  signInWithGoogle: async () => {},
-  signOut: async () => {},
+  signInWithGoogle: async () => { },
+  signOut: async () => { },
   getIdToken: async () => "",
 });
 
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("User:", user);
       setUser(user);
       setLoading(false);
     });
