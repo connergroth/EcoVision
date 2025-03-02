@@ -1,24 +1,13 @@
 "use client";
-import LoadingPage from "./components/LoadingPage";
-import { useAuth } from "./hooks/AuthHook";
+import LoadingPage from "../components/LoadingPage";
+import { useAuth } from "../hooks/AuthHook";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
+import { auth } from "../../firebase/firebaseConfig";
 
 const Home = () => {
-    const { user, loading } = useAuth();
     const router = useRouter();
-    useEffect(() => {
-        if(!loading && !user) {
-            router.push("/auth");
-        }
-    }, [user, loading, router]);
-
-    if(loading || !user) {
-        return <LoadingPage />;
-    }
-
     return (
         <main className="min-h-screen bg-white flex flex-col items-center justify-center p-8">
             <div className="text-center">
