@@ -3,6 +3,7 @@ import numpy as np
 from ultralytics import YOLO
 import time
 import threading
+import os
 
 # Global variables
 returnlist = []
@@ -10,6 +11,7 @@ trashlist = [0, 0, 0, 0, 0]
 count = 0
 classes = ['cardboard/paper', 'glass', 'metal', 'plastic', 'trash']
 running = True
+detected_items = set()  # Set to keep track of detected items
 
 # Define thresholds for excluding heads (adjust these values as needed)
 MIN_HEAD_WIDTH = 50
@@ -32,6 +34,24 @@ def is_head(box):
     height = y2 - y1
     return MIN_HEAD_WIDTH <= width <= MAX_HEAD_WIDTH and MIN_HEAD_HEIGHT <= height <= MAX_HEAD_HEIGHT
 
+def save_detection(frame, box, label, conf):
+    """
+    Save the detected object as a JPEG file.
+    
+    Args:
+        frame: The original frame.
+        box: Bounding box coordinates (x1, y1, x2, y2).
+        label: The class label of the detected object.
+        conf: The confidence score of the detection.
+    """
+    x1, y1, x2, y2 = box
+    detected_object = frame[y1:y2, x1:x2]
+    filename = f"{label}_{conf:.2f}.jpg"
+    filepath = os.path.join("detections", filename)
+    os.makedirs("detections", exist_ok=True)
+    cv2.imwrite(filepath, detected_object)
+    print(f"Saved detection: {filepath}")
+
 def trashfunc():
     """
     Detect and classify waste objects using YOLOv8
@@ -39,12 +59,13 @@ def trashfunc():
     Returns:
         List of class detection counts
     """
-    global count, trashlist, running
+    global count, trashlist, running, detected_items
     
     # Reset global variables
     trashlist = [0, 0, 0, 0, 0]
     count = 0
     running = True
+    detected_items.clear()  # Clear the set of detected items
     
     # Load pre-trained YOLOv8 model
     try:
@@ -119,6 +140,11 @@ def trashfunc():
                             
                             # Print detection details
                             print(f"Detected: {label}, Confidence: {conf}, Box: {x1}, {y1}, {x2-x1}, {y2-y1}")
+                            
+                            # Save the detected object as a JPEG file if not already saved
+                            if label not in detected_items:
+                                save_detection(frame, (x1, y1, x2, y2), label, conf)
+                                detected_items.add(label)
                             
                             # Update class counts
                             for i, class_name in enumerate(classes):
