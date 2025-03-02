@@ -9,3 +9,6 @@ ryzenai_env/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Ignore Node Modules
+node_modules/

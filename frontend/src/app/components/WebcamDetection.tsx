@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Webcam from 'react-webcam';
-import { apiClient } from '@/api/apiClient';
+import { apiClient } from '@/app/api/apiClient';
 
 interface Detection {
   category: string;

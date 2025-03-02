@@ -84,7 +84,10 @@ async def detect_image(
         best_detection = max(detections, key=lambda d: d.confidence)
         
         # Fetch recycling information from external API
-        recycling_info = await get_recycling_info(best_detection.category)
+        recycling_info = await get_recycling_info(
+            category=best_detection.category,
+            confidence=best_detection.confidence
+        )
         
         # Calculate points earned
         points_earned = settings.POINTS_PER_RECYCLABLE if recycling_info and recycling_info.recyclable else 0

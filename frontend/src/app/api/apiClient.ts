@@ -14,7 +14,7 @@ const getAuthToken = async () => {
 // Generic API request handler with authentication
 const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   const token = await getAuthToken();
-  
+
   const headers = {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ export const apiClient = {
       formData.append('is_webcam_snapshot', String(isWebcamSnapshot));
 
       const token = await getAuthToken();
-      
+
       return fetch(`${API_BASE_URL}/detect`, {
         method: 'POST',
         headers: {
@@ -57,7 +57,7 @@ export const apiClient = {
 
     detectBase64: async (base64Image: string, isWebcamSnapshot = true) => {
       const token = await getAuthToken();
-      
+
       return fetch(`${API_BASE_URL}/detect-base64`, {
         method: 'POST',
         headers: {
@@ -74,9 +74,9 @@ export const apiClient = {
     setupWebSocket: async () => {
       const token = await getAuthToken();
       const userId = auth.currentUser?.uid;
-      
+
       const socket = new WebSocket(`ws://localhost:8000/ws/detection/${userId}`);
-      
+
       return new Promise<WebSocket>((resolve, reject) => {
         socket.onopen = () => {
           // Send authentication message
@@ -119,3 +119,4 @@ export const apiClient = {
     }
   }
 };
+

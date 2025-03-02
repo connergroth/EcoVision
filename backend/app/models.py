@@ -2,6 +2,15 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
+import torch
+import onnxruntime
+import numpy as np
+import cv2
+from ultralytics import YOLO
+from ultralytics.utils.ops import non_max_suppression
+from ultralytics.nn.modules.dfl import DFL
+from ultralytics.utils.general import dist2bbox
+
 
 class RecyclableCategory(str, Enum):
     PLASTIC = "plastic"
@@ -11,6 +20,16 @@ class RecyclableCategory(str, Enum):
     ELECTRONICS = "electronics"
     COMPOST = "compost"
     UNKNOWN = "unknown"
+
+class RecyclingInfo(BaseModel):
+    category: RecyclableCategory
+    recyclable: bool
+    description: str
+    disposal_instructions: str
+    environmental_impact: str
+    additional_info: Optional[Dict[str, Any]] = None
+    source: Optional[str] = "standard"  # Can be "standard", "LLaMA", or "fallback"
+    interesting_facts: Optional[List[str]] = None
 
 class DetectionRequest(BaseModel):
     image: str = Field(..., description="Base64 encoded image data")
@@ -151,3 +170,4 @@ class YOLOv8Detector:
                     })
         
         return results
+

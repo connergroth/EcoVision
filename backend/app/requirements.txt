@@ -11,6 +11,11 @@ firebase-admin>=6.2.0
 
 # HTTP client
 aiohttp>=3.8.6
+backoff>=2.2.1  # For rate limiting and retry logic
+
+# LLaMA integration
+tenacity>=8.2.3  # For retry mechanisms
+ratelimit>=2.2.1  # For API rate limiting
 
 # Image processing
 Pillow>=10.0.1

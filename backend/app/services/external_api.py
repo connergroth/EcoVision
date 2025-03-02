@@ -7,37 +7,70 @@ from app.models import RecyclableCategory, RecyclingInfo
 from app.config import settings
 from app.utils.logger import get_logger
 
+# Import the LLaMA service
+from app.services.llama_service import get_llama_recycling_info
+
 logger = get_logger(__name__)
 
 # Cache for recycling information to reduce API calls
 recycling_info_cache = {}
 
-async def get_recycling_info(category: RecyclableCategory) -> Optional[RecyclingInfo]:
+async def get_recycling_info(category: RecyclableCategory, confidence: float = 0.0) -> Optional[RecyclingInfo]:
     """
-    Fetch additional information about a recyclable item from an external API.
+    Fetch additional information about a recyclable item.
+    
+    This function will first try to get enhanced information from the LLaMA model if enabled,
+    then fall back to the external API, and finally use fallback information if both fail.
     
     Args:
         category: The detected recyclable category
+        confidence: The confidence score of the detection
     
     Returns:
-        RecyclingInfo object with details or None if API call fails
+        RecyclingInfo object with details or None if all sources fail
     """
     # Check cache first
-    if category in recycling_info_cache:
+    cache_key = f"{category}-{confidence:.2f}"
+    if cache_key in recycling_info_cache:
         logger.info(f"Using cached recycling info for {category}")
-        return recycling_info_cache[category]
+        return recycling_info_cache[cache_key]
     
-    # Prepare API endpoint and parameters
-    api_url = f"{settings.EXTERNAL_API_URL}/recyclable-info"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {settings.EXTERNAL_API_KEY}"
-    }
-    params = {
-        "category": category.value
-    }
+    # Try to use LLaMA-enhanced information if enabled
+    if settings.USE_LLAMA_ENHANCED_INFO and confidence > 0:
+        try:
+            llama_info = await get_llama_recycling_info(category, confidence)
+            if llama_info:
+                # Convert dictionary to RecyclingInfo
+                recycling_info = RecyclingInfo(
+                    category=category,
+                    recyclable=llama_info.get("recyclable", True),
+                    description=llama_info.get("description", ""),
+                    disposal_instructions=llama_info.get("disposal_instructions", ""),
+                    environmental_impact=llama_info.get("environmental_impact", ""),
+                    additional_info=llama_info.get("additional_info", {"source": "LLaMA AI"})
+                )
+                
+                # Cache the result
+                recycling_info_cache[cache_key] = recycling_info
+                
+                logger.info(f"Using LLaMA-enhanced info for {category}")
+                return recycling_info
+        except Exception as e:
+            logger.error(f"Error getting LLaMA-enhanced info: {e}")
+            # Continue to fallback sources
     
+    # Try external API if LLaMA failed or is disabled
     try:
+        # Prepare API endpoint and parameters
+        api_url = f"{settings.EXTERNAL_API_URL}/recyclable-info"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {settings.EXTERNAL_API_KEY}"
+        }
+        params = {
+            "category": category.value
+        }
+        
         # Make API request
         async with aiohttp.ClientSession() as session:
             async with session.get(api_url, headers=headers, params=params) as response:
@@ -59,7 +92,7 @@ async def get_recycling_info(category: RecyclableCategory) -> Optional[Recycling
                 )
                 
                 # Cache the result
-                recycling_info_cache[category] = recycling_info
+                recycling_info_cache[cache_key] = recycling_info
                 
                 return recycling_info
                 
@@ -69,7 +102,7 @@ async def get_recycling_info(category: RecyclableCategory) -> Optional[Recycling
 
 def _get_fallback_info(category: RecyclableCategory) -> RecyclingInfo:
     """
-    Provide fallback information when the external API is unavailable.
+    Provide fallback information when external sources are unavailable.
     
     Args:
         category: The detected recyclable category

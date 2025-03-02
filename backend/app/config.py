@@ -24,6 +24,13 @@ class Settings(BaseSettings):
     EXTERNAL_API_URL: str = os.getenv("EXTERNAL_API_URL", "https://api.recycleinfo.org/v1")
     EXTERNAL_API_KEY: str = os.getenv("EXTERNAL_API_KEY", "")
     
+    # LLaMA Model Integration
+    LLAMA_API_URL: str = os.getenv("LLAMA_API_URL", "https://api.llama.your-provider.com/v1/completions")
+    LLAMA_API_KEY: str = os.getenv("LLAMA_API_KEY", "")
+    LLAMA_MODEL_NAME: str = os.getenv("LLAMA_MODEL_NAME", "llama-7b")
+    LLAMA_MAX_TOKENS: int = int(os.getenv("LLAMA_MAX_TOKENS", "512"))
+    USE_LLAMA_ENHANCED_INFO: bool = os.getenv("USE_LLAMA_ENHANCED_INFO", "True").lower() == "true"
+    
     # Image Processing
     MAX_IMAGE_SIZE: int = int(os.getenv("MAX_IMAGE_SIZE", "1024"))  # Maximum image dimension
     
