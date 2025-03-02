@@ -8,14 +8,14 @@
 
 EcoVision is an intelligent recycling assistant that uses computer vision and AI to help users identify recyclable items, learn proper disposal methods, and track their environmental impact.
 
-## AMD AI PC Implementation
+## 🔲 AMD AI PC Implementation
 EcoVision leverages AMD Ryzen™ AI PC technology to optimize our object detection pipeline. We've specifically engineered our YOLOv8 model to utilize the Neural Processing Unit (NPU) on AMD hardware, which provides significant performance improvements while reducing power consumption. This implementation enables real-time recyclable item detection directly on-device with minimal latency, making the app more responsive and energy-efficient for everyday use.
 
 ## Demo
 
 [![EcoVision Demo](https://img.shields.io/badge/Watch%20Demo-Video-red?style=for-the-badge)](https://example.com/demo-video)
 
-## Problem Statement
+## 🚀 Problem Statement
 
 
 Improper waste disposal and low recycling rates remain significant environmental challenges:
@@ -26,7 +26,7 @@ Improper waste disposal and low recycling rates remain significant environmental
 
 EcoVision addresses these challenges by providing real-time identification, personalized guidance, and gamification elements to make recycling more accessible and engaging.
 
-## Key Features
+## ✨ Key Features
 
 - **Real-time object detection**: Identify recyclable items using your device's camera
 - **AI-enhanced information**: Get detailed, contextual information about each item powered by DeepSeek models
@@ -35,7 +35,7 @@ EcoVision addresses these challenges by providing real-time identification, pers
 - **Leaderboard**: Compete with others in your community to promote sustainable behaviors
 - **Educational content**: Learn interesting facts and proper disposal methods for various materials
 
-## Tech Stack
+## 💻 Tech Stack
 
 ### Backend
 - **Framework**: FastAPI (Python)
@@ -60,7 +60,7 @@ EcoVision addresses these challenges by providing real-time identification, pers
 - **Logging**: Loguru
 - **CI/CD**: GitHub Actions
 
-## System Architecture
+## 🖥️ System Architecture
 
 The application follows a microservices architecture:
 - **Frontend Service**: Next.js application serving the UI
@@ -68,7 +68,7 @@ The application follows a microservices architecture:
 - **User Service**: Manages user data, history, and statistics
 - **DeepSeek Integration Service**: Communicates with DeepSeek models for enhanced content generation
 
-## AI Models
+## 🤖 AI Models
 
 ### Object Detection
 - Custom YOLOv8 model fine-tuned on a dataset of recyclable materials
@@ -84,7 +84,7 @@ The application follows a microservices architecture:
   - Interesting facts
 - Response caching and rate limiting for efficient operation
 
-## Environmental Impact
+## 🌎 Environmental Impact
 
 By using EcoVision, users can:
 - Reduce contamination in recycling streams
