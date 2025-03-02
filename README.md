@@ -25,10 +25,14 @@ Improper waste disposal and low recycling rates remain significant environmental
 
 EcoVision addresses these challenges by providing real-time identification, personalized guidance, and gamification elements to make recycling more accessible and engaging.
 
-## Test Images
-![image](https://github.com/user-attachments/assets/8c09f5f2-8361-4086-a5c7-bc3f3caea2b7)
-![image](https://github.com/user-attachments/assets/88eb3988-c121-454d-8832-d6eb5ef5f80f)
-![image](https://github.com/user-attachments/assets/35dd10bd-35a9-4265-ab4b-e6cdfaeb2317)
+## Sample Test Images
+<div align="center">
+  <p float="left">
+    <img src="https://github.com/user-attachments/assets/8c09f5f2-8361-4086-a5c7-bc3f3caea2b7" width="48%" />
+    <img src="https://github.com/user-attachments/assets/88eb3988-c121-454d-8832-d6eb5ef5f80f" width="48%" /> 
+    <img src="https://github.com/user-attachments/assets/35dd10bd-35a9-4265-ab4b-e6cdfaeb2317" width="48%" /> 
+  </p>
+</div>
 
 
 ## ✨ Key Features
