@@ -7,7 +7,6 @@ const signInWithGoogle = async () => {
     // Handle successful sign in
     return result;
   } catch (error) {
-    // Handle errors here
     console.error("Error signing in with Google: ", error);
   }
 };
