@@ -2,6 +2,15 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
+import torch
+import onnxruntime
+import numpy as np
+import cv2
+from ultralytics import YOLO
+from ultralytics.utils.ops import non_max_suppression
+from ultralytics.nn.modules.dfl import DFL
+from ultralytics.utils.general import dist2bbox
+
 
 class RecyclableCategory(str, Enum):
     PLASTIC = "plastic"
