@@ -12,6 +12,16 @@ class RecyclableCategory(str, Enum):
     COMPOST = "compost"
     UNKNOWN = "unknown"
 
+class RecyclingInfo(BaseModel):
+    category: RecyclableCategory
+    recyclable: bool
+    description: str
+    disposal_instructions: str
+    environmental_impact: str
+    additional_info: Optional[Dict[str, Any]] = None
+    source: Optional[str] = "standard"  # Can be "standard", "LLaMA", or "fallback"
+    interesting_facts: Optional[List[str]] = None
+
 class DetectionRequest(BaseModel):
     image: str = Field(..., description="Base64 encoded image data")
     user_id: str = Field(..., description="Firebase user ID")
@@ -151,3 +161,4 @@ class YOLOv8Detector:
                     })
         
         return results
+

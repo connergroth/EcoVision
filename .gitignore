@@ -1,1 +1,14 @@
+# Ignore Python virtual environments
+venv/
+ryzenai_env/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore other common files and directories
+__pycache__/
+*.pyc
+.DS_Store
+
+# Ignore Node Modules
 node_modules/

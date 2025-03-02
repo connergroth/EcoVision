@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "firebase": "^11.4.0",
-    "next": "^15.2.0"
+    "next": "^15.2.0",
+    "react-webcam": "^7.2.0"
   }
 }

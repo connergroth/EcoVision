@@ -10,8 +10,8 @@ from app.utils.logger import setup_logger
 logger = setup_logger()
 
 app = FastAPI(
-    title="RecycleVision API",
-    description="Backend API for the RecycleVision application, providing image detection, user history, and leaderboard functionalities.",
+    title="EcoVision API",
+    description="Backend API for the EcoVision application, providing image detection, user history, and leaderboard functionalities.",
     version="1.0.0"
 )
 
@@ -19,7 +19,7 @@ app = FastAPI(
 origins = [
     "http://localhost",
     "http://localhost:3000",  # Local React/Next.js development server
-    "https://recyclevision.app",  # Production frontend
+    "https://ecovision.app",  # Production frontend
 ]
 
 app.add_middleware(
@@ -38,7 +38,7 @@ app.include_router(websocket.router, tags=["WebSocket"])
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to RecycleVision API. See /docs for API documentation."}
+    return {"message": "Welcome to EcoVision API. See /docs for API documentation."}
 
 @app.get("/health")
 async def health_check():
@@ -47,5 +47,5 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("Starting RecycleVision API server")
+    logger.info("Starting EcoVision API server")
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
