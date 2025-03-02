@@ -7,7 +7,8 @@ const dummyResponse = {
     "confidence": 0.95,
     "material": "paper",
     "item": "Newspaper",
-    "success": true
+    "success": true,
+    "imageSrc": null
 }
 
 
@@ -23,8 +24,34 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
     const [aiInsight, setAiInsight] = useState("");
     const [loading, setLoading] = useState(true);
     console.log("data: ", data);
+
+
+    const handleImageUpload = async (imageSrc: string) => {
+        try {
+            const result = await fetch("/api/image",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ imageData: imageSrc }),
+                }
+            )
+            const data = await result.json();
+            console.log("data: ", data);
+        } catch (error) {
+            console.error("Error uploading image:", error);
+        }
+    }
+    
+
     useEffect(() => {
         if (!isOpen || !data) return;
+
+
+        if(data &&data.imageSrc) {
+            handleImageUpload(data.imageSrc);
+        }
 
         setLoading(true);
         const getAiInsight = async () => {
@@ -128,10 +155,13 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete }: {
             const imageSrc = webcamRef.current.getScreenshot();
             
             // Use the dummy response directly
-            return dummyResponse;
+            if(!imageSrc) {
+                return { success: false, imageSrc: null };
+            }
+            return {...dummyResponse, imageSrc};
         } catch (error) {
             console.error("Error analyzing image:", error);
-            return { success: false };
+            return { success: false, imageSrc: null };
         } finally {
             setIsAnalyzing(false);
         }
@@ -142,10 +172,12 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete }: {
 
         const interval = setInterval(async () => {
             const response = await capture();
+            console.log("response: ", response);
             if (response.success) {
+                console.log(response.imageSrc)
                 onScanComplete(response);
-                console.log("response: ", response);
-                setIsWebcamOpen(false);
+
+                    setIsWebcamOpen(false);
             }
         }, 1000);
 
