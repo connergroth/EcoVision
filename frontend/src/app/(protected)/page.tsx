@@ -18,13 +18,9 @@ const Home = () => {
                     Transforming the way we see sustainability
                 </p>
                 <div className="mt-12">
-                    <button onClick={() => router.push("/image")} className="px-8 py-3 bg-emerald-500 text-white rounded-full 
+                    <button onClick={() => router.push("/image")} className="cursor-pointer px-8 py-3 bg-emerald-500 text-white rounded-full 
                         hover:bg-emerald-600 transition-colors duration-300">
                         Get Started
-                    </button>
-                    <button onClick={() => signOut(auth)} className="px-8 py-3 bg-emerald-500 text-white rounded-full 
-                        hover:bg-emerald-600 transition-colors duration-300">
-                        Sign Out
                     </button>
                 </div>
             </div>
