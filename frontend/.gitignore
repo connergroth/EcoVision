@@ -41,8 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 
-#bruh
-frontend/assets/*.png
-**/*.ipynb
-
 
