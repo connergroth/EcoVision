@@ -29,6 +29,7 @@ interface DetectionResponse {
   error_message: string | null;
 }
 
+
 const WebcamDetection: React.FC = () => {
   const webcamRef = useRef<Webcam>(null);
   const [isActive, setIsActive] = useState(false);
@@ -41,20 +42,7 @@ const WebcamDetection: React.FC = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [detectedObjects, setDetectedObjects] = useState<Detection[]>([]);
 
-  // Initialize WebSocket connection
-  useEffect(() => {
-    if (isActive && !socket) {
-      setupWebSocket();
-    }
-    
-    return () => {
-      if (socket) {
-        socket.close();
-      }
-    };
-  }, [isActive, setupWebSocket, socket]);
-
-  const setupWebSocket = async () => {
+  const setupWebSocket = useCallback(async () => {
     try {
       const newSocket = await apiClient.detection.setupWebSocket();
       setSocket(newSocket);
@@ -87,7 +75,20 @@ const WebcamDetection: React.FC = () => {
       console.error('Failed to setup WebSocket:', error);
       setErrorMessage('Failed to initialize detector. Please try again.');
     }
-  };
+  }, [isProcessing]);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    if (isActive && !socket) {
+      setupWebSocket();
+    }
+    
+    return () => {
+      if (socket) {
+        socket.close();
+      }
+    };
+  }, [isActive, setupWebSocket, socket]);
 
   // Capture and process a full image
   const captureAndProcess = async () => {
