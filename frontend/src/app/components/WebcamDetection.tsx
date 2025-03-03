@@ -41,6 +41,34 @@ const WebcamDetection: React.FC = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [detectedObjects, setDetectedObjects] = useState<Detection[]>([]);
 
+  // Capture and process a full image
+  const captureAndProcess = async () => {
+    if (!webcamRef.current || isProcessing) return;
+    
+    try {
+      setIsProcessing(true);
+      
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (!imageSrc) {
+        throw new Error("Failed to capture image");
+      }
+      
+      // Call the backend API
+      const result = await apiClient.detection.detectBase64(
+        imageSrc, 
+      );
+      
+      setDetectionResult(result);
+      setShowResults(true);
+      
+    } catch (error) {
+      console.error('Detection error:', error);
+      setErrorMessage('Failed to process image. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const setupWebSocket = useCallback(async () => {
     try {
       const newSocket = await apiClient.detection.setupWebSocket();
@@ -74,7 +102,7 @@ const WebcamDetection: React.FC = () => {
       console.error('Failed to setup WebSocket:', error);
       setErrorMessage('Failed to initialize detector. Please try again.');
     }
-  }, [isProcessing]);
+  }, [isProcessing, captureAndProcess]);
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -88,34 +116,6 @@ const WebcamDetection: React.FC = () => {
       }
     };
   }, [isActive, setupWebSocket, socket]);
-
-  // Capture and process a full image
-  const captureAndProcess = async () => {
-    if (!webcamRef.current || isProcessing) return;
-    
-    try {
-      setIsProcessing(true);
-      
-      const imageSrc = webcamRef.current.getScreenshot();
-      if (!imageSrc) {
-        throw new Error("Failed to capture image");
-      }
-      
-      // Call the backend API
-      const result = await apiClient.detection.detectBase64(
-        imageSrc, 
-      );
-      
-      setDetectionResult(result);
-      setShowResults(true);
-      
-    } catch (error) {
-      console.error('Detection error:', error);
-      setErrorMessage('Failed to process image. Please try again.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   // Function to send frame to WebSocket
   const sendFrameToSocket = useCallback(() => {
@@ -326,6 +326,3 @@ const WebcamDetection: React.FC = () => {
 };
 
 export default WebcamDetection;
-
-
-
