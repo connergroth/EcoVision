@@ -65,24 +65,24 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
 const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, email }: { 
     isWebcamOpen: boolean, 
     setIsWebcamOpen: (isWebcamOpen: boolean) => void,
-    onScanComplete: (data: any) => void,
+    onScanComplete: (data: TrashData) => void,
     userId: string,
     email: string
 }) => {
-    const webcamRef = useRef(null);
+    const webcamRef = useRef<Webcam>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const capture = React.useCallback(async () => {
         if(isAnalyzing) return {success: false, imageSrc: null};
         try {
-            const imageSrc = webcamRef.current.getScreenshot();
+            const imageSrc = webcamRef.current?.getScreenshot();
             
             // Use the dummy response directly
             if(!imageSrc) {
                 return { success: false, imageSrc: null };
             }
             setIsAnalyzing(true);
-            return {success: true,imageSrc};
+            return {success: true, imageSrc};
         } catch (error) {
             console.error("Error analyzing image:", error);
             return { success: false, imageSrc: null };
@@ -115,10 +115,10 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, 
             console.log("response: ", response);
             if (response.success && !isAnalyzing) {
                 console.log("Generating classification...");
-                const data = await handleClassifyImage(response.imageSrc);
+                const data = await handleClassifyImage(response.imageSrc as string);
                 console.log("JSON DATA: ", data)
                 if(!(data.item == "N/A")) {
-                    const result = await fetch("/api/image", {
+                    await fetch("/api/image", {
                         method: "POST",
                         body: JSON.stringify({ imageData: response.imageSrc, item: data.item, category: data.category, insight: data.insight, bin: data.bin, userId, email }),
                     });
@@ -134,7 +134,7 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, 
         return () => {
             clearInterval(interval);
         };
-    }, [capture, isWebcamOpen, setIsWebcamOpen, onScanComplete]);
+    }, [capture, isWebcamOpen, setIsWebcamOpen, onScanComplete, isAnalyzing, userId, email]);
 
     return (
         <>
@@ -159,11 +159,11 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, 
 
 export default function Home() {
     const [isWebcamOpen, setIsWebcamOpen] = useState(false);
-    const [modalData, setModalData] = useState(null);
+    const [modalData, setModalData] = useState<TrashData | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const { user, loading } = useAuth();
+    const { user } = useAuth();
 
-    const handleScanComplete = (data) => {
+    const handleScanComplete = (data: TrashData) => {
         setModalData(data);
         setIsModalOpen(true);
     };
@@ -183,13 +183,15 @@ export default function Home() {
                 <div className="space-y-8">
                     {isWebcamOpen ? (
                         <>
-                            <WebcamCapture 
-                                isWebcamOpen={isWebcamOpen} 
-                                setIsWebcamOpen={setIsWebcamOpen}
-                                onScanComplete={handleScanComplete}
-                                userId={user?.uid}
-                                email={user?.email}
-                            />
+                            {user && (
+                                <WebcamCapture 
+                                    isWebcamOpen={isWebcamOpen} 
+                                    setIsWebcamOpen={setIsWebcamOpen}
+                                    onScanComplete={handleScanComplete}
+                                    userId={user.uid}
+                                    email={user.email || ''}
+                                />
+                            )}
                             <div className="flex justify-center">
                                 <button 
                                     className="cursor-pointer group relative px-6 py-3 bg-white shadow-lg text-slate-700 rounded-full hover:bg-slate-50 transition-all duration-200 ease-in-out"
@@ -229,11 +231,13 @@ export default function Home() {
                 </div>
             </div>
 
-            <ResultModal 
-                isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
-                data={modalData} 
-            />
+            {modalData && (
+                <ResultModal 
+                    isOpen={isModalOpen} 
+                    onClose={() => setIsModalOpen(false)} 
+                    data={modalData} 
+                />
+            )}
         </main>
     );
 }

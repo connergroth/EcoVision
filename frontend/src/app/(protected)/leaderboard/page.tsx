@@ -5,21 +5,24 @@ import { useAuth } from '@/app/hooks/AuthHook';
 
 interface LeaderboardEntry {
   email: string;
-      co2Saved: number;
-      uploads: number;
-      rank: number;
-      trashCaptures: number;
+  co2Saved: number;
+  uploads: number;
+  rank: number;
+  trashCaptures: number;
+  createdAt?: {
+    toDate?: () => Date;
+  } | string | Date;
+  accountAge?: number;
 }
 
-
-const calculateAccountAge = (createdAt: any): number => {
+const calculateAccountAge = (createdAt: LeaderboardEntry['createdAt']): number => {
   let createdDate: Date;
   
   if (createdAt instanceof Date) {
     createdDate = createdAt;
   } else if (typeof createdAt === 'string') {
     createdDate = new Date(createdAt);
-  } else if (createdAt && typeof createdAt.toDate === 'function') {
+  } else if (createdAt && typeof createdAt === 'object' && 'toDate' in createdAt && typeof createdAt.toDate === 'function') {
     createdDate = createdAt.toDate(); // Firebase Timestamp
   } else {
     // Fallback if date is invalid
@@ -35,35 +38,32 @@ const calculateAccountAge = (createdAt: any): number => {
 };
 
 export default function LeaderboardPage() {
-
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
+  const { user } = useAuth();
 
-    const { user } = useAuth();
+  useEffect(() => {
+    if(user) {
+      const fetchLeaderboard = async () => {
+        const response = await fetch(`/api/leaderboard`);
+        const data = await response.json();
 
-    useEffect(() => {
-      if(user) {
-        const fetchLeaderboard = async () => {
-            const response = await fetch(`/api/leaderboard`);
-            const data = await response.json();
+        const leaderboardData = data.map((entry: LeaderboardEntry) => ({
+          ...entry,
+          accountAge: calculateAccountAge(entry.createdAt)
+        }));
 
-            const leaderboardData = data.map((entry: any) => ({
-              ...entry,
-              accountAge: calculateAccountAge(entry.createdAt)
-            }));
+        setLeaderboardData(leaderboardData);
+      };
 
-            setLeaderboardData(leaderboardData);
-        };
-
-        fetchLeaderboard();
-      }
-    }, [user]);
+      fetchLeaderboard();
+    }
+  }, [user]);
 
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-center text-3xl font-bold mb-6">Eco Impact Leaderboard 🌿</h1>
       
-
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full">
           <thead className="bg-gray-50">

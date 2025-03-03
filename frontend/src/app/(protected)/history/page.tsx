@@ -2,6 +2,7 @@
 
 import {useEffect, useState} from 'react';
 import { useAuth } from '@/app/hooks/AuthHook';
+import Image from 'next/image';
 
 interface WasteItem {
     createdAt: {
@@ -15,13 +16,18 @@ interface WasteItem {
     insight?: string;
 }
 
-const formatFirebaseDate = (date: any) => {
+interface FirebaseDate {
+    _seconds: number;
+    _nanoseconds: number;
+}
+
+const formatFirebaseDate = (date: FirebaseDate | Date | string) => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
     // Convert Firestore Timestamp to JavaScript Date
-    if (date && date._seconds) {
+    if (date && typeof date === 'object' && '_seconds' in date) {
         return new Date(date._seconds * 1000).toLocaleDateString('en-US', options);
     }
-    return new Date(date).toLocaleDateString('en-US', options);
+    return new Date(date as string | number | Date).toLocaleDateString('en-US', options);
 }
 
 const ImageModal = ({ imageUrl, onClose, item }: { imageUrl: string; onClose: () => void; item: WasteItem }) => {
@@ -40,11 +46,15 @@ const ImageModal = ({ imageUrl, onClose, item }: { imageUrl: string; onClose: ()
                     </svg>
                 </button>
                 <div className="p-8">
-                    <img 
-                        src={imageUrl} 
-                        alt="Waste Item" 
-                        className="w-full h-auto max-h-[60vh] object-contain rounded-md mb-4"
-                    />
+                    <div className="relative w-full h-[60vh]">
+                        <Image 
+                            src={imageUrl} 
+                            alt="Waste Item" 
+                            className="object-contain rounded-md mb-4"
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                    </div>
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <h3 className="text-xl font-semibold text-gray-800">{item.item}</h3>
@@ -74,7 +84,7 @@ const ImageModal = ({ imageUrl, onClose, item }: { imageUrl: string; onClose: ()
 }
 
 const History = () => {
-    const {user, loading} = useAuth();
+    const {user} = useAuth();
     const [trashData, setTrashData] = useState<WasteItem[]>([]);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -93,7 +103,7 @@ const History = () => {
                 }
                 const data = await response.json();
 
-                const formattedData = data.map((item: any) => ({
+                const formattedData = data.map((item: WasteItem) => ({
                     ...item,
                     createdAt: item.createdAt || item.date,
                 }));
@@ -125,7 +135,7 @@ const History = () => {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight (kg)</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
