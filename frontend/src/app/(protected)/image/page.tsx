@@ -3,20 +3,22 @@ import { TrashData } from "@/utils/gpt-image-analysis";
 import { useAuth } from "@/app/hooks/AuthHook";
 
 import React, { useRef, useEffect, useState } from 'react';
-import Webcam from "react-webcam";
+import dynamic from 'next/dynamic';
 
-// Extended interface for TrashData to include missing properties
-interface ExtendedTrashData extends TrashData {
-    category: string;  // Add the missing property
-    insight: string;   // Add the insight property as well
+// Dynamically import Webcam with SSR disabled
+const Webcam = dynamic(() => import('react-webcam'), {
+  ssr: false,
+});
+
+// Extend TrashData interface only if necessary properties are missing from base interface
+interface ExtendedTrashData extends Omit<TrashData, 'category' | 'insight'> {
+    category: string;
+    insight: string;
+    bin: string;
+    item: string;
 }
 
 const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () => void, data: ExtendedTrashData }) => {
-
-    const handleClose = () => {
-        onClose();
-    }
-
     if (!isOpen) return null;
 
     return (
@@ -24,7 +26,7 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
             <div className="bg-white rounded-2xl p-8 max-w-2xl w-full">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-800">Scan Result</h2>
-                    <button onClick={handleClose}
+                    <button onClick={onClose}
                      className="cursor-pointer text-slate-500 hover:text-slate-700">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -47,10 +49,9 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
                         <div className="space-y-3">
                             <h3 className="font-semibold text-slate-700">Insights</h3>
                             <div className="bg-blue-50 rounded-lg p-3">
-           
-                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                        {data.insight}
-                                    </p>
+                                <p className="text-sm text-slate-600 leading-relaxed">
+                                    {data.insight}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -81,7 +82,6 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, 
         try {
             const imageSrc = webcamRef.current?.getScreenshot();
             
-            // Use the dummy response directly
             if(!imageSrc) {
                 return { success: false, imageSrc: null };
             }
@@ -91,54 +91,91 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, 
             console.error("Error analyzing image:", error);
             return { success: false, imageSrc: null };
         }
-     
-    }, [webcamRef, isAnalyzing]);
-
+    }, [isAnalyzing]);
 
     const handleClassifyImage = async (imageSrc: string) => {
-        const result = await fetch("/api/classify", {
-            method: "POST",
-            body: JSON.stringify({ image: imageSrc }),
-        });
+        try {
+            const result = await fetch("/api/classify", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ image: imageSrc }),
+            });
 
-
-        if (!result.ok) {
-            throw new Error("Failed to classify image");
+            if (!result.ok) {
+                throw new Error("Failed to classify image");
+            }
+            const classifiedData = await result.json();
+            console.log("data: ", classifiedData);
+            return {...classifiedData, imageSrc};
+        } catch (error) {
+            console.error("Classification error:", error);
+            // Return fallback data structure on error
+            return {
+                item: "Error",
+                bin: "Error",
+                category: "Error",
+                insight: "An error occurred during classification",
+                imageSrc
+            };
         }
-        const classifiedData = await result.json();
-        console.log("data: ", classifiedData);
-        return {...classifiedData, imageSrc};
-    }
+    };
 
     useEffect(() => {
         if(isAnalyzing) return;
         if (!isWebcamOpen) return;
 
-        const interval = setInterval(async () => {
-            const response = await capture();
-            console.log("response: ", response);
-            if (response.success && !isAnalyzing) {
-                console.log("Generating classification...");
-                const data = await handleClassifyImage(response.imageSrc as string);
-                console.log("JSON DATA: ", data)
-                if(!(data.item == "N/A")) {
-                    await fetch("/api/image", {
-                        method: "POST",
-                        body: JSON.stringify({ imageData: response.imageSrc, item: data.item, category: data.category, insight: data.insight, bin: data.bin, userId, email }),
-                    });
-                    console.log("IMAGE SRC: ", response.imageSrc);
+        let interval: NodeJS.Timeout;
+        
+        const scanProcess = async () => {
+            interval = setInterval(async () => {
+                const response = await capture();
+                if (response.success && !isAnalyzing) {
+                    console.log("Generating classification...");
+                    const data = await handleClassifyImage(response.imageSrc as string);
+                    
+                    if(!(data.item === "N/A" || data.item === "Error")) {
+                        try {
+                            await fetch("/api/image", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({ 
+                                    imageData: response.imageSrc, 
+                                    item: data.item, 
+                                    category: data.category, 
+                                    insight: data.insight, 
+                                    bin: data.bin, 
+                                    userId, 
+                                    email 
+                                }),
+                            });
+                        } catch (error) {
+                            console.error("Error saving image:", error);
+                        }
+                    }
+                    
+                    onScanComplete(data as ExtendedTrashData);
+                    setIsAnalyzing(true);
+                    setIsWebcamOpen(false);
+                    clearInterval(interval);
                 }
-                onScanComplete(data as ExtendedTrashData);
-                setIsAnalyzing(true);
-                setIsWebcamOpen(false);
-                return;
-            }
-        }, 1000);
+            }, 1000);
+        };
+        
+        scanProcess();
 
         return () => {
-            clearInterval(interval);
+            if (interval) clearInterval(interval);
         };
     }, [capture, isWebcamOpen, setIsWebcamOpen, onScanComplete, isAnalyzing, userId, email]);
+
+    // Handle case where webcam isn't available
+    if (typeof window === 'undefined') {
+        return null;
+    }
 
     return (
         <>
@@ -196,7 +233,7 @@ export default function Home() {
                                     userId={user.uid}
                                     email={user.email || ''}
                                 />
-                            )}
+                            ) : null}
                             <div className="flex justify-center">
                                 <button 
                                     className="cursor-pointer group relative px-6 py-3 bg-white shadow-lg text-slate-700 rounded-full hover:bg-slate-50 transition-all duration-200 ease-in-out"
@@ -241,9 +278,9 @@ export default function Home() {
                     isOpen={isModalOpen} 
                     onClose={() => setIsModalOpen(false)} 
                     data={modalData} 
+                />
             )}
         </main>
         </>
-    );
     );
 }
