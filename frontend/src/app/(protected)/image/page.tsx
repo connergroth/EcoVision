@@ -5,7 +5,7 @@ import { useAuth } from "@/app/hooks/AuthHook";
 import React, { useRef, useEffect, useState } from 'react';
 import Webcam from "react-webcam";
 
-// Option 1: Create an extended interface that includes all properties used in this component
+// Extended interface for TrashData to include missing properties
 interface ExtendedTrashData extends TrashData {
     category: string;  // Add the missing property
     insight: string;   // Add the insight property as well
