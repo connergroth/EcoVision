@@ -17,6 +17,12 @@ interface WebcamRefType {
     getScreenshot(): string | null;
 }
 
+// Define User interface
+interface User {
+    uid: string;
+    email: string | null;
+}
+
 const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () => void, data: ExtendedTrashData }) => {
     if (!isOpen) return null;
 
@@ -201,7 +207,7 @@ export default function Home() {
     const [isWebcamOpen, setIsWebcamOpen] = useState(false);
     const [modalData, setModalData] = useState<ExtendedTrashData | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const { user } = useAuth();
+    const { user } = useAuth() as { user: User | null };
 
     const handleScanComplete = (data: ExtendedTrashData) => {
         setModalData(data);
