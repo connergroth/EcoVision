@@ -1,5 +1,4 @@
 "use client"
-import { TrashData } from "@/utils/gpt-image-analysis";
 import { useAuth } from "@/app/hooks/AuthHook";
 
 import React, { useRef, useEffect, useState } from 'react';
@@ -79,8 +78,8 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, 
     userId: string,
     email: string
 }) => {
-    // Using a more generic ref type to avoid TypeScript issues with the dynamically imported component
-const webcamRef = useRef<any>(null);
+    // Using a more specific type for the webcam reference
+const webcamRef = useRef<React.MutableRefObject<HTMLVideoElement | null>>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const capture = React.useCallback(async () => {
