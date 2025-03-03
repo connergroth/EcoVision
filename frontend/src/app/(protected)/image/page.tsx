@@ -42,8 +42,8 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
                             <div className="space-y-2 text-sm">
                                 <p className="text-slate-700"><span className="font-medium">Item:</span> {data.item}</p>
                                 <p className="text-slate-700"><span className="font-medium">Material:</span> {data.category}</p>
+                                </div>
                             </div>
-                        </div>
                         <div className="space-y-3">
                             <h3 className="font-semibold text-slate-700">Insights</h3>
                             <div className="bg-blue-50 rounded-lg p-3">
