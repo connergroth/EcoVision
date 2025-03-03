@@ -165,7 +165,7 @@ export default function Home() {
     const [isWebcamOpen, setIsWebcamOpen] = useState(false);
     const [modalData, setModalData] = useState<ExtendedTrashData | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const { user } = useAuth() as { user: { uid: string, email: string | null } };
+    const { user } = useAuth();
 
     const handleScanComplete = (data: ExtendedTrashData) => {
         setModalData(data);
@@ -187,7 +187,7 @@ export default function Home() {
                 <div className="space-y-8">
                     {isWebcamOpen ? (
                         <>
-                            {user && (
+                            {user ? (
                                 <WebcamCapture 
                                     isWebcamOpen={isWebcamOpen} 
                                     setIsWebcamOpen={setIsWebcamOpen}
