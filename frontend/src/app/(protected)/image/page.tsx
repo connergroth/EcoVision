@@ -1,25 +1,20 @@
 "use client"
 import { useAuth } from "@/app/hooks/AuthHook";
-
 import React, { useRef, useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+import Webcam from "react-webcam";
 
-// Dynamically import Webcam with SSR disabled and proper typing
-const Webcam = dynamic(
-  () => import('react-webcam').then((mod) => mod.default),
-  {
-    ssr: false,
-  }
-);
-
-// Extend TrashData interface only if necessary properties are missing from base interface
-// Define ExtendedTrashData with all required properties to avoid type errors
+// Define ExtendedTrashData with all required properties
 interface ExtendedTrashData {
     category: string;
     insight: string;
     bin: string;
     item: string;
     imageSrc?: string;
+}
+
+// Define interface for webcam ref
+interface WebcamRefType {
+    getScreenshot(): string | null;
 }
 
 const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () => void, data: ExtendedTrashData }) => {
@@ -78,8 +73,7 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, 
     userId: string,
     email: string
 }) => {
-    // Using a more specific type for the webcam reference
-const webcamRef = useRef<React.MutableRefObject<HTMLVideoElement | null>>(null);
+    const webcamRef = useRef<WebcamRefType>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const capture = React.useCallback(async () => {
@@ -131,41 +125,46 @@ const webcamRef = useRef<React.MutableRefObject<HTMLVideoElement | null>>(null);
         if(isAnalyzing) return;
         if (!isWebcamOpen) return;
 
-        let interval: NodeJS.Timeout;
+        let interval: NodeJS.Timeout | null = null;
         
-        const scanProcess = async () => {
+        const scanProcess = () => {
             interval = setInterval(async () => {
-                const response = await capture();
-                if (response.success && !isAnalyzing) {
-                    console.log("Generating classification...");
-                    const data = await handleClassifyImage(response.imageSrc as string);
-                    
-                    if(!(data.item === "N/A" || data.item === "Error")) {
-                        try {
-                            await fetch("/api/image", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json"
-                                },
-                                body: JSON.stringify({ 
-                                    imageData: response.imageSrc, 
-                                    item: data.item, 
-                                    category: data.category, 
-                                    insight: data.insight, 
-                                    bin: data.bin, 
-                                    userId, 
-                                    email 
-                                }),
-                            });
-                        } catch (error) {
-                            console.error("Error saving image:", error);
+                try {
+                    const response = await capture();
+                    if (response.success && !isAnalyzing) {
+                        console.log("Generating classification...");
+                        const data = await handleClassifyImage(response.imageSrc as string);
+                        
+                        if(!(data.item === "N/A" || data.item === "Error")) {
+                            try {
+                                await fetch("/api/image", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({ 
+                                        imageData: response.imageSrc, 
+                                        item: data.item, 
+                                        category: data.category, 
+                                        insight: data.insight, 
+                                        bin: data.bin, 
+                                        userId, 
+                                        email 
+                                    }),
+                                });
+                            } catch (error) {
+                                console.error("Error saving image:", error);
+                            }
                         }
+                        
+                        onScanComplete(data as ExtendedTrashData);
+                        setIsAnalyzing(true);
+                        setIsWebcamOpen(false);
+                        if (interval) clearInterval(interval);
                     }
-                    
-                    onScanComplete(data as ExtendedTrashData);
-                    setIsAnalyzing(true);
-                    setIsWebcamOpen(false);
-                    clearInterval(interval);
+                } catch (error) {
+                    console.error("Error in scan process:", error);
+                    if (interval) clearInterval(interval);
                 }
             }, 1000);
         };
@@ -177,18 +176,13 @@ const webcamRef = useRef<React.MutableRefObject<HTMLVideoElement | null>>(null);
         };
     }, [capture, isWebcamOpen, setIsWebcamOpen, onScanComplete, isAnalyzing, userId, email]);
 
-    // Handle case where webcam isn't available
-    if (typeof window === 'undefined') {
-        return null;
-    }
-
     return (
         <>
             {isWebcamOpen && (
                 <div className="relative w-full max-w-xl mx-auto rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
                     <Webcam
                         audio={false}
-                        ref={webcamRef}
+                        ref={webcamRef as React.LegacyRef<Webcam>}
                         screenshotFormat="image/jpeg"
                         width="100%"
                         videoConstraints={{ width: 1280, height: 720, facingMode: "user" }}
