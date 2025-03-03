@@ -2,16 +2,19 @@
 import { TrashData } from "@/utils/gpt-image-analysis";
 import { useAuth } from "@/app/hooks/AuthHook";
 
-
 import React, { useRef, useEffect, useState } from 'react';
 import Webcam from "react-webcam";
 
-const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () => void, data: TrashData }) => {
+// Option 1: Create an extended interface that includes all properties used in this component
+interface ExtendedTrashData extends TrashData {
+    category: string;  // Add the missing property
+}
+
+const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () => void, data: ExtendedTrashData }) => {
 
     const handleClose = () => {
         onClose();
     }
-
 
     if (!isOpen) return null;
 
@@ -65,7 +68,7 @@ const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () =
 const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, email }: { 
     isWebcamOpen: boolean, 
     setIsWebcamOpen: (isWebcamOpen: boolean) => void,
-    onScanComplete: (data: TrashData) => void,
+    onScanComplete: (data: ExtendedTrashData) => void,
     userId: string,
     email: string
 }) => {
@@ -124,7 +127,7 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, 
                     });
                     console.log("IMAGE SRC: ", response.imageSrc);
                 }
-                onScanComplete(data);
+                onScanComplete(data as ExtendedTrashData);
                 setIsAnalyzing(true);
                 setIsWebcamOpen(false);
                 return;
@@ -159,11 +162,11 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, 
 
 export default function Home() {
     const [isWebcamOpen, setIsWebcamOpen] = useState(false);
-    const [modalData, setModalData] = useState<TrashData | null>(null);
+    const [modalData, setModalData] = useState<ExtendedTrashData | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { user } = useAuth();
 
-    const handleScanComplete = (data: TrashData) => {
+    const handleScanComplete = (data: ExtendedTrashData) => {
         setModalData(data);
         setIsModalOpen(true);
     };
