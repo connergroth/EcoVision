@@ -42,7 +42,7 @@ const WebcamDetection: React.FC = () => {
   const [detectedObjects, setDetectedObjects] = useState<Detection[]>([]);
 
   // Capture and process a full image
-  const captureAndProcess = async () => {
+  const captureAndProcess = useCallback(async () => {
     if (!webcamRef.current || isProcessing) return;
     
     try {
@@ -67,7 +67,7 @@ const WebcamDetection: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [isProcessing]);
 
   const setupWebSocket = useCallback(async () => {
     try {
