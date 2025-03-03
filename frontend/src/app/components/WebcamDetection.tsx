@@ -52,14 +52,14 @@ const WebcamDetection: React.FC = () => {
         socket.close();
       }
     };
-  }, [isActive]);
+  }, [isActive, setupWebSocket, socket]);
 
   const setupWebSocket = async () => {
     try {
       const newSocket = await apiClient.detection.setupWebSocket();
       setSocket(newSocket);
       
-      newSocket.onmessage = (event) => {
+      newSocket.onmessage = (event: MessageEvent) => {
         const data = JSON.parse(event.data);
         
         if (data.status === 'detection' && data.detection) {
@@ -90,7 +90,7 @@ const WebcamDetection: React.FC = () => {
   };
 
   // Capture and process a full image
-  const captureAndProcess = async (clientConfidence = 0) => {
+  const captureAndProcess = async () => {
     if (!webcamRef.current || isProcessing) return;
     
     try {
@@ -129,7 +129,7 @@ const WebcamDetection: React.FC = () => {
         }));
       }
     }
-  }, [socket, webcamRef, captureAndProcess]);
+  }, [socket, webcamRef]);
 
   // Continuously send frames to WebSocket
   useEffect(() => {

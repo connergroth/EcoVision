@@ -16,7 +16,7 @@ interface WebSocketDetectorProps {
   onDetection: (detection: Detection) => void;
   onError: (error: string) => void;
   isActive: boolean;
-  webcamRef: React.RefObject<any>; 
+  webcamRef: React.RefObject<{ getScreenshot: () => string | null }>; 
 }
 
 const WebSocketDetector: React.FC<WebSocketDetectorProps> = ({ 
@@ -105,7 +105,7 @@ const WebSocketDetector: React.FC<WebSocketDetectorProps> = ({
         setSocket(null);
       }
     };
-  }, [user, isActive, getIdToken, onError]);
+  }, [user, isActive, getIdToken, onError, onDetection]);
   
   // Function to send frame to WebSocket
   const sendFrameToSocket = useCallback(() => {
@@ -124,7 +124,7 @@ const WebSocketDetector: React.FC<WebSocketDetectorProps> = ({
     } catch (error) {
       console.error('Error capturing or sending frame:', error);
     }
-  }, [webcamRef, onDetection]);
+  }, [webcamRef]);
   
   // Continuously send frames to WebSocket
   useEffect(() => {
