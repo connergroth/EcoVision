@@ -29,7 +29,6 @@ interface DetectionResponse {
   error_message: string | null;
 }
 
-
 const WebcamDetection: React.FC = () => {
   const webcamRef = useRef<Webcam>(null);
   const [isActive, setIsActive] = useState(false);
@@ -58,7 +57,7 @@ const WebcamDetection: React.FC = () => {
           // If we get a high-confidence detection, capture a full image and send
           // to the backend for complete processing
           if (newDetection.confidence > 0.7 && !isProcessing) {
-            captureAndProcess(newDetection.confidence);
+            captureAndProcess();
           }
         }
       };
