@@ -84,7 +84,7 @@ const ImageModal = ({ imageUrl, onClose, item }: { imageUrl: string; onClose: ()
 }
 
 const History = () => {
-    const {user} = useAuth();
+    const { user } = useAuth() as { user: { uid: string } | null };
     const [trashData, setTrashData] = useState<WasteItem[]>([]);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
