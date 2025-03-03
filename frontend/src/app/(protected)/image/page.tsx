@@ -165,7 +165,7 @@ export default function Home() {
     const [isWebcamOpen, setIsWebcamOpen] = useState(false);
     const [modalData, setModalData] = useState<ExtendedTrashData | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const { user } = useAuth();
+    const { user } = useAuth() as { user: { uid: string, email: string | null } };
 
     const handleScanComplete = (data: ExtendedTrashData) => {
         setModalData(data);
