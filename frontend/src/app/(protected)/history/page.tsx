@@ -105,7 +105,7 @@ const History = () => {
 
                 const formattedData = data.map((item: WasteItem) => ({
                     ...item,
-                    createdAt: item.createdAt || item.date,
+                    createdAt: item.createdAt,
                 }));
 
                 setTrashData(formattedData);
@@ -122,7 +122,7 @@ const History = () => {
                 <ImageModal 
                     imageUrl={selectedImage} 
                     onClose={() => setSelectedImage(null)} 
-                    item={trashData.find(item => item.imageUrl === selectedImage)!}
+                    item={trashData.find(item => item.imageUrl === selectedImage) || {} as WasteItem}
                 />
             )}
             
@@ -157,12 +157,16 @@ const History = () => {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <button 
-                                        onClick={() => setSelectedImage(item.imageUrl)}
-                                        className="cursor-pointer px-3 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded hover:from-emerald-600 hover:to-teal-600 transition-all duration-300"
-                                    >
-                                        View Image
-                                    </button>
+                                    {item.imageUrl ? (
+                                        <button 
+                                            onClick={() => setSelectedImage(item.imageUrl)}
+                                            className="cursor-pointer px-3 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded hover:from-emerald-600 hover:to-teal-600 transition-all duration-300"
+                                        >
+                                            View Image
+                                        </button>
+                                    ) : (
+                                        <span className="text-gray-400">No Image</span>
+                                    )}
                                 </td>
                             </tr>
                         ))}
