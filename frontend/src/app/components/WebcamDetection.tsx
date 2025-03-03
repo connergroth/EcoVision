@@ -326,3 +326,6 @@ const WebcamDetection: React.FC = () => {
 };
 
 export default WebcamDetection;
+
+
+
