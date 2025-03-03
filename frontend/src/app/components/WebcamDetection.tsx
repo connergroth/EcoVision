@@ -42,7 +42,19 @@ const WebcamDetection: React.FC = () => {
   const [detectedObjects, setDetectedObjects] = useState<Detection[]>([]);
 
   // Initialize WebSocket connection
-  const setupWebSocket = useCallback(async () => {
+  useEffect(() => {
+    if (isActive && !socket) {
+      setupWebSocket();
+    }
+    
+    return () => {
+      if (socket) {
+        socket.close();
+      }
+    };
+  }, [isActive]);
+
+  const setupWebSocket = async () => {
     try {
       const newSocket = await apiClient.detection.setupWebSocket();
       setSocket(newSocket);
@@ -58,7 +70,7 @@ const WebcamDetection: React.FC = () => {
           // If we get a high-confidence detection, capture a full image and send
           // to the backend for complete processing
           if (newDetection.confidence > 0.7 && !isProcessing) {
-            captureAndProcess();
+            captureAndProcess(newDetection.confidence);
           }
         }
       };
@@ -75,47 +87,10 @@ const WebcamDetection: React.FC = () => {
       console.error('Failed to setup WebSocket:', error);
       setErrorMessage('Failed to initialize detector. Please try again.');
     }
-  }, [isProcessing]);
-
-  // Function to send frame to WebSocket
-  const sendFrameToSocket = useCallback(() => {
-    if (socket && socket.readyState === WebSocket.OPEN && webcamRef.current) {
-      const imageSrc = webcamRef.current.getScreenshot();
-      if (imageSrc) {
-        const base64Image = imageSrc.split(',')[1]; // Remove data URL prefix
-        socket.send(JSON.stringify({
-          image: base64Image
-        }));
-      }
-    }
-  }, [socket, webcamRef]);
-
-  // Continuously send frames to WebSocket
-  useEffect(() => {
-    if (!isActive || !socket) return;
-
-    const interval = setInterval(() => {
-      sendFrameToSocket();
-    }, 500); // Send every 500ms
-
-    return () => clearInterval(interval);
-  }, [isActive, socket, sendFrameToSocket]);
-
-  // Initialize WebSocket when active
-  useEffect(() => {
-    if (isActive && !socket) {
-      setupWebSocket();
-    }
-    
-    return () => {
-      if (socket) {
-        socket.close();
-      }
-    };
-  }, [isActive, socket, setupWebSocket]);
+  };
 
   // Capture and process a full image
-  const captureAndProcess = async () => {
+  const captureAndProcess = async (clientConfidence = 0) => {
     if (!webcamRef.current || isProcessing) return;
     
     try {
@@ -142,6 +117,30 @@ const WebcamDetection: React.FC = () => {
       setIsProcessing(false);
     }
   };
+
+  // Function to send frame to WebSocket
+  const sendFrameToSocket = useCallback(() => {
+    if (socket && socket.readyState === WebSocket.OPEN && webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
+        const base64Image = imageSrc.split(',')[1]; 
+        socket.send(JSON.stringify({
+          image: base64Image
+        }));
+      }
+    }
+  }, [socket, webcamRef, captureAndProcess]);
+
+  // Continuously send frames to WebSocket
+  useEffect(() => {
+    if (!isActive || !socket) return;
+
+    const interval = setInterval(() => {
+      sendFrameToSocket();
+    }, 500); // Send every 500ms
+
+    return () => clearInterval(interval);
+  }, [isActive, socket, sendFrameToSocket]);
 
   // Handle manual capture button
   const handleManualCapture = () => {
