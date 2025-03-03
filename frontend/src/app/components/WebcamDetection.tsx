@@ -105,7 +105,6 @@ const WebcamDetection: React.FC = () => {
       // Call the backend API
       const result = await apiClient.detection.detectBase64(
         imageSrc, 
-        true // is webcam snapshot
       );
       
       setDetectionResult(result);
