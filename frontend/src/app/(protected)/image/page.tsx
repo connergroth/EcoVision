@@ -5,17 +5,22 @@ import { useAuth } from "@/app/hooks/AuthHook";
 import React, { useRef, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 
-// Dynamically import Webcam with SSR disabled
-const Webcam = dynamic(() => import('react-webcam'), {
-  ssr: false,
-});
+// Dynamically import Webcam with SSR disabled and proper typing
+const Webcam = dynamic(
+  () => import('react-webcam').then((mod) => mod.default),
+  {
+    ssr: false,
+  }
+);
 
 // Extend TrashData interface only if necessary properties are missing from base interface
-interface ExtendedTrashData extends Omit<TrashData, 'category' | 'insight'> {
+// Define ExtendedTrashData with all required properties to avoid type errors
+interface ExtendedTrashData {
     category: string;
     insight: string;
     bin: string;
     item: string;
+    imageSrc?: string;
 }
 
 const ResultModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClose: () => void, data: ExtendedTrashData }) => {
@@ -74,7 +79,8 @@ const WebcamCapture = ({ isWebcamOpen, setIsWebcamOpen, onScanComplete, userId, 
     userId: string,
     email: string
 }) => {
-    const webcamRef = useRef<Webcam>(null);
+    // Using a more generic ref type to avoid TypeScript issues with the dynamically imported component
+const webcamRef = useRef<any>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const capture = React.useCallback(async () => {
