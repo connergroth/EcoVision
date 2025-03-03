@@ -116,13 +116,18 @@ const History = () => {
 
     }, [user]);
 
+    // Find the item that corresponds to the selected image
+    const selectedItem = selectedImage 
+        ? trashData.find(item => item.imageUrl === selectedImage) 
+        : null;
+
     return (
         <div className="p-6 max-w-6xl mx-auto">
-            {selectedImage && (
+            {selectedImage && selectedItem && (
                 <ImageModal 
                     imageUrl={selectedImage} 
                     onClose={() => setSelectedImage(null)} 
-                    item={trashData.find(item => item.imageUrl === selectedImage) || {} as WasteItem}
+                    item={selectedItem}
                 />
             )}
             
@@ -159,7 +164,7 @@ const History = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {item.imageUrl ? (
                                         <button 
-                                            onClick={() => setSelectedImage(item.imageUrl)}
+                                            onClick={() => item.imageUrl && setSelectedImage(item.imageUrl)}
                                             className="cursor-pointer px-3 py-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded hover:from-emerald-600 hover:to-teal-600 transition-all duration-300"
                                         >
                                             View Image
