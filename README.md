@@ -13,11 +13,11 @@ Much of the code is based on [AMD AI Software](https://github.com/amd/RyzenAI-SW
 
 EcoVision leverages AMD Ryzen™ AI PC technology to optimize our object detection pipeline. We've specifically engineered our YOLOv8 model to utilize the Neural Processing Unit (NPU) on AMD hardware, providing significant performance improvements while reducing power consumption.
 
-To enhance real-time object detection efficiency, we retrained a pretrained AMD/yolov8m COCO model from Hugging Face, utilizing cloud resources to fine-tune the model on custom datasets sourced from Roboflow. By leveraging NPU technology, we achieved superior efficiency and performance, enabling real-time recyclable item detection directly on-device with minimal latency. This implementation ensures a more responsive and energy-efficient experience for everyday use.
+To enhance real-time object detection efficiency, we retrained a pre-trained AMD/YOLOv8m COCO model from Hugging Face, utilizing cloud resources to fine-tune the model on custom datasets sourced from Roboflow. By leveraging NPU technology, we achieved superior efficiency and performance, enabling real-time recyclable item detection directly on-device with minimal latency. This implementation ensures a more responsive and energy-efficient experience for everyday use.
 
 ## Demo
 
-[![EcoVision Demo](https://img.shields.io/badge/Watch%20Demo-Video-red?style=for-the-badge)](https://example.com/demo-video)
+[![EcoVision Demo](https://img.shields.io/badge/Watch%20Demo-Video-red?style=for-the-badge)](https://vimeo.com/1062545282/d5329fe2b0?share=copy)
 
 ## 🚀 Problem Statement
 
